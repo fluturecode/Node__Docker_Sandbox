@@ -5,7 +5,7 @@ ENV TZ America/Los_Angeles
 
 RUN apk del tzdata
 
-ARG NODE_ENV=development
+ARG NODE_ENV=production
 
 RUN npm i npm@latest -g
 
