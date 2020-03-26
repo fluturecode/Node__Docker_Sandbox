@@ -1,10 +1,5 @@
 FROM node:12.16
 
-RUN apk add --no-cache tzdata
-ENV TZ America/Los_Angeles
-
-RUN apk del tzdata
-
 ARG NODE_ENV=production
 
 RUN npm i npm@latest -g

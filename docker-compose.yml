@@ -9,14 +9,19 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=pgadmin
+      - POSTGRES_PASSWORD=pgadmin!2356#
+      - POSTGRES_DB=boilerplate_db
   server:
     build:
-      context: ./docker-files/Dockerfile.dev
+      context: ./
+      dockerfile: Dockerfile.dev
     command: nodemon
     depends_on:
       - postgres
     ports:
-      3000:3000
+      - 3000:3000
     volumes:
       - .:/opt/node/app:delegated
       - ./package.json:/opt/node/package.json
