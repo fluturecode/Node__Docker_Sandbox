@@ -1,0 +1,8 @@
+# Compiled Outputs
+dist
+
+# Environment Files
+.env
+
+# Modules/Folders
+node_modules

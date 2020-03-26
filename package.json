@@ -1,0 +1,24 @@
+{
+  "name": "boilerplate-server-node",
+  "version": "0.0.1",
+  "description": "Shift3 nodejs boilerplate",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shift3/boilerplate-server-node.git"
+  },
+  "keywords": [
+    "NodeJs",
+    "Boilerplate",
+    "Shift3"
+  ],
+  "author": "mwallert@shift3tech.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Shift3/boilerplate-server-node/issues"
+  },
+  "homepage": "https://github.com/Shift3/boilerplate-server-node#readme"
+}
