@@ -1,0 +1,29 @@
+FROM node:12.16
+
+RUN apk add --no-cache tzdata
+ENV TZ America/Los_Angeles
+
+RUN apk del tzdata
+
+ARG NODE_ENV=development
+
+RUN npm i npm@latest -g
+
+RUN mkdir /opt/node && chown node:node /opt/node
+WORKDIR /opt/node
+
+COPY ./package.json ./package-lock.json* ./
+RUN npm install --no-optional && npm cache clean --force
+ENV PATH /opt/node/node_modules/.bin:$PATH
+
+WORKDIR /opt/node/app
+
+COPY ./dist /opt/node/app
+COPY ./public /opt/node/app/public
+COPY ./views /opt/node/app/views
+
+EXPOSE 3000
+
+USER node
+
+CMD ["node", "./app.js"]
