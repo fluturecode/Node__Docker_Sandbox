@@ -4,7 +4,7 @@ ARG NODE_ENV=development
 
 RUN npm i npm@latest -g
 
-RUN npm i nodemon -g
+RUN npm i @nestjs/cli -g
 
 RUN mkdir /opt/node && chown node:node /opt/node
 WORKDIR /opt/node
