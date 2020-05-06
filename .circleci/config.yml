@@ -1,0 +1,41 @@
+version: 2.1
+jobs:
+  test-server:
+    working_directory: ~/boilerplate-server-node
+    docker:
+      - image: circleci/node:12.16.2
+
+    steps:
+      - checkout
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: v1-deps-{{ checksum "package.json" }}
+      - run:
+          name: install-packages
+          command: 'npm install --no-audit'
+      - run:
+          name: run-audit-ci
+          command: 'npx audit-ci -m'
+      - save_cache:
+          key: v1-deps-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: run-unit-tests
+          command: 'npm run test'
+      - run:
+          name: run-e2e-tests
+          command: 'npm run test:e2e'
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: test_results
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test-server
