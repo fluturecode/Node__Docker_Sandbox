@@ -1,8 +1,8 @@
 ---
-name: Feature
-about: Issue template for new feature requests
-title: "[FEATURE]"
-labels: enhancement
+name: Epic Issue Template
+about: Issue template used for Epics
+title: "[EPIC]"
+labels: epic
 assignees: mwallert
 
 ---
@@ -15,6 +15,9 @@ A clear and concise description of what is currently happening.
 
 ## Steps to Implement
 Add a list of the steps required to implement this feature
+
+## Epic Checklist
+Add a list of issues related to this epic
 
 ## Additional context
 Add any other context or screenshots about the feature request here.
