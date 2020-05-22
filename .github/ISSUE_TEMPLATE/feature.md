@@ -1,8 +1,8 @@
 ---
 name: Feature
 about: Issue template for new feature requests
-title: "[FEATURE]"
-labels: enhancement
+title: ''
+labels: ''
 assignees: mwallert
 
 ---

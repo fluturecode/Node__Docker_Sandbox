@@ -1,8 +1,8 @@
 ---
 name: Epic Issue Template
 about: Issue template used for Epics
-title: "[EPIC]"
-labels: epic
+title: ''
+labels: ''
 assignees: mwallert
 
 ---
