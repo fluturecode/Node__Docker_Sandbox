@@ -14,11 +14,11 @@ ENV PATH /opt/node/node_modules/.bin:$PATH
 WORKDIR /opt/node/app
 
 COPY ./dist /opt/node/app
-COPY ./public /opt/node/app/public
-COPY ./views /opt/node/app/views
+# COPY ./public /opt/node/app/public
+# COPY ./views /opt/node/app/views
 
 EXPOSE 3000
 
 USER node
 
-CMD ["node", "dist/main"]
+CMD ["node", "main.js"]

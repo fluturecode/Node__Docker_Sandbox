@@ -35,3 +35,17 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# Sensative Files
+deploy.sh
+Dockerrun.aws.json
+secrets-*.tfvars
+
+# Terraform Files
+.terraform
+terraform.tfstate
+terraform.tfstate.*
