@@ -6,23 +6,25 @@ services:
     networks:
       - server_network
     ports:
-      - 5432:5432
+      - ${DB_PORT}:${DB_PORT}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
   server:
     build:
       context: ./
       dockerfile: Dockerfile.dev
+    networks:
+        - server_network
     command: nest start --watch
     env_file: ./.env
     depends_on:
       - postgres
     ports:
-      - ${PORT}:${PORT}
+      - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
       - .:/opt/node/app:delegated
       - ./package.json:/opt/node/package.json

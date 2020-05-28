@@ -44,6 +44,7 @@ lerna-debug.log*
 deploy.sh
 Dockerrun.aws.json
 secrets-*.tfvars
+ormconfig.json
 
 # Terraform Files
 .terraform
