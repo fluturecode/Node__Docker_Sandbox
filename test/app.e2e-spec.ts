@@ -1,29 +1,38 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
+import { getConnection } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeOrmConfig } from '../src/utilities/database/typeorm.config';
 
 import * as request from 'supertest';
 
-import environment from '../src/environment';
 
 describe('AppController (e2e)', () => {
-  const e2eTestEnvironment = {
-    jwt_secret: "e2etest"
-  };
-
   let app: INestApplication;
-
-  beforeAll(() => {
-    Object.assign(environment, e2eTestEnvironment);
-  });
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        AppModule,
+        TypeOrmModule.forRoot(
+          Object.assign(
+            {},
+            typeOrmConfig,
+            {
+              database: 'e2e_testing',
+              host: 'localhost',
+              name: 'e2e_testing'
+            }
+          )
+        )
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    await getConnection('default').close();
   });
 
   it('/ (GET)', () => {
@@ -41,5 +50,9 @@ describe('AppController (e2e)', () => {
         statusCode: 401,
         message: 'Unauthorized'
       });
+  });
+
+  afterEach(async () => {
+    await getConnection('e2e_testing').close();
   });
 });

@@ -14,7 +14,7 @@ class BoilerplateServer {
   async bootstrap(): Promise<void> {
     this.app = await NestFactory.create(AppModule);
 
-    await this.databaseUtility.connect();
+    await this.databaseUtility.checkForMigrations();
 
     await this.app.listen(environment.port);
 

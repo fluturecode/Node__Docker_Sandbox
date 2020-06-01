@@ -28,7 +28,8 @@ services:
     volumes:
       - .:/opt/node/app:delegated
       - ./package.json:/opt/node/package.json
-      - notused:/opt/node/node_modules
+      - ./package-lock.json:/opt/node/package-lock.json
+      - notused:/opt/node/app/node_modules
 volumes:
   postgres_data:
   notused:

@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
-import { JwtService } from '@nestjs/jwt';
+import { AuthService } from '../auth.service';
 
 interface JwtResponse {
   jwt_token: string;
@@ -16,17 +16,8 @@ interface User {
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  // This is very temporary until the auth service and user entity are finished
-  users: User[] = [
-    {
-      id: 1,
-      email: 'mwallert@shift3tech.com',
-      password: 'goodpassword1'
-    }
-  ];
-
   constructor(
-    private jwtService: JwtService
+    private authService: AuthService
   ) {
     super({
       usernameField: 'email'
@@ -34,18 +25,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(email: string, password: string): Promise<JwtResponse> {
-    // TODO: Implement Auth/User service validate user
-    const user: User = this.users.find((u: User) => u.email === email && u.password === password);
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials.');
-    }
-
-    delete user.password;
-
-    return {
-      jwt_token: this.jwtService.sign(user),
-      user
-    };
+    return this.authService.signIn(email, password);
   }
 }

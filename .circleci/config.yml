@@ -4,6 +4,20 @@ jobs:
     working_directory: ~/boilerplate-server-node
     docker:
       - image: circleci/node:12.16.2
+        environment:
+          DB_HOST: ${DB_HOST}
+          DB_NAME: ${DB_NAME}
+          DB_PASSWORD: ${DB_PASSWORD}
+          DB_USER: ${DB_USER}
+          JWT_SECRET: ${JWT_SECRET}
+          NODE_ENV: ${NODE_ENV}
+          SERVER_PORT: ${PORT}
+
+      - image: circleci/postgres:11.8
+        environment:
+          POSTGRES_USER: ${DB_USER}
+          POSTGRES_PASSWORD: ${DB_PASSWORD}
+          POSTGRES_DB: ${DB_NAME}
 
     steps:
       - checkout

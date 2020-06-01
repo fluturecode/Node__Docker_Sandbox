@@ -9,10 +9,12 @@ RUN npm i @nestjs/cli -g
 RUN mkdir /opt/node && chown node:node /opt/node
 WORKDIR /opt/node
 
-COPY ./package.json ./package-lock.json* ./
+COPY package.json package-lock.json* ./
 RUN npm install --no-optional && npm cache clean --force
 ENV PATH /opt/node/node_modules/.bin:$PATH
 
 WORKDIR /opt/node/app
 
-COPY ./ /opt/node/app
+COPY . /opt/node/app
+
+USER node

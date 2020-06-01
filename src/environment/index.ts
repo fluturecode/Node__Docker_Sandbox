@@ -1,7 +1,10 @@
-// Uncomment these lines if not utilizing Docker or
-// something that feeds node the .env like ElasticBeanstalk
-// import dotenv from 'dotenv';
-// dotenv.config();
+import * as dotenv from 'dotenv';
+
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config();
+
+  process.env.DB_HOST = 'localhost';
+}
 
 export default {
   db_host: process.env.DB_HOST,

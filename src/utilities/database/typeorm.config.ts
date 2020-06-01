@@ -15,7 +15,7 @@ export const typeOrmConfig: ConnectionOptions = {
     password: environment.db_password,
     database: environment.db_name,
     entities: [
-        `${__dirname}/../../**/*.entity.{js,ts}`
+        `${__dirname}/../../entities/**/*.entity.{js,ts}`
     ],
     migrations: [
         `${__dirname}/../../migrations/*.{js,ts}`
