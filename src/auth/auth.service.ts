@@ -34,7 +34,7 @@ export class AuthService {
       unauthorizedException: UnauthorizedException = new UnauthorizedException('Invalid credentials');
 
     if (!user) {
-      await this.userRepository.comparePassword(password, null);
+      await this.userRepository.comparePassword(password, 'q123');
 
       throw unauthorizedException;
     }

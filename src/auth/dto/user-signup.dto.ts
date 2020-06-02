@@ -1,12 +1,15 @@
 import { IsString, MinLength, Matches } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 const includesOneUpperLowerSpecialCharAndNumber: RegExp = /(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
 
 export class UserSignupDto {
+  @ApiProperty()
   @IsString()
   @MinLength(5)
   email: string;
 
+  @ApiProperty()
   @IsString()
   @MinLength(8)
   @Matches(
@@ -17,10 +20,12 @@ export class UserSignupDto {
   )
   password: string;
 
+  @ApiProperty()
   @IsString()
   @MinLength(1)
   first_name: string;
 
+  @ApiProperty()
   @IsString()
   @MinLength(1)
   last_name: string;
