@@ -1,12 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, INestApplication } from '@nestjs/common';
+import { Logger, INestApplication, InternalServerErrorException } from '@nestjs/common';
 
 import { DatabaseUtility } from './utilities/database';
 import { SwaggerUtility } from './utilities/swagger';
 
 import environment from './environment';
 import { CorsUtility } from './utilities/security/cors.utility';
+
+import * as sentry from '@sentry/node';
 
 class BoilerplateServer {
   app: INestApplication;
@@ -17,6 +19,8 @@ class BoilerplateServer {
 
   async bootstrap(): Promise<void> {
     this.app = await NestFactory.create(AppModule);
+
+    sentry.init({ dsn: environment.sentry_dsn });
 
     await this.databaseUtility.checkForMigrations();
 
