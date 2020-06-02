@@ -6,6 +6,7 @@ import { DatabaseUtility } from './utilities/database';
 import { SwaggerUtility } from './utilities/swagger';
 
 import environment from './environment';
+import { CorsUtility } from './utilities/security/cors.utility';
 
 class BoilerplateServer {
   app: INestApplication;
@@ -18,6 +19,8 @@ class BoilerplateServer {
     this.app = await NestFactory.create(AppModule);
 
     await this.databaseUtility.checkForMigrations();
+
+    this.app.enableCors(new CorsUtility().returnCorsConfig());
 
     this.swaggerUtility.initializeSwagger(this.app);
 
