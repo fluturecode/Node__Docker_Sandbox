@@ -1,7 +1,7 @@
-import { Controller, UseGuards, Post, Request, Get, Body, ValidationPipe } from '@nestjs/common';
+import { Controller, UseGuards, Post, Request, Get, Body, ValidationPipe, HttpCode } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { UserSignupDto } from './dto/user-signup.dto';
+import { UserSignupDto } from '../user/dto/user-signup.dto';
 import { User } from 'src/entities/user/user.entity';
 import { AuthService } from './auth.service';
 
@@ -20,17 +20,9 @@ export class AuthController {
   @ApiBody({ type: UserCredentialsDto })
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @HttpCode(200)
   async login(@Request() req) {
     return req.user;
-  }
-
-  @ApiResponse({ status: 201, description: 'New user created successfully' })
-  @ApiResponse({ status: 400, description: 'Error with user payload' })
-  @Post('signup')
-  async signup(
-    @Body(ValidationPipe) userSignupPayload: UserSignupDto
-  ): Promise<User> {
-    return this.authService.signUp(userSignupPayload);
   }
 
   @ApiBearerAuth()

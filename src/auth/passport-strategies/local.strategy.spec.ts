@@ -35,7 +35,8 @@ const mockJwtService = () => ({
     comparePassword: (password: string) => testUsers.find((u: User) => u.password === password),
     createSession: (user: User) => Object.assign({}, testUserPayload),
     findUserByEmail: (email: string) => testUsers.find((u: User) => u.email === email),
-    generateSalt: () => '2537*&endu))198'
+    generateSalt: () => '2537*&endu))198',
+    removeSensativeKeys: () => testUsers[0]
   });
 
 describe('LocalStrategy', () => {

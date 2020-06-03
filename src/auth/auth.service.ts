@@ -3,16 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../entities/user/user.respository';
 import { User } from 'src/entities/user/user.entity';
-import { UserSignupDto } from './dto/user-signup.dto';
 import { JwtResponse } from './interfaces/jwt-response.interface';
 
 @Injectable()
 export class AuthService {
-  userKeysToDelete: string[] = [
-    'password',
-    'session_salt'
-  ];
-
   constructor(
     private jwtService: JwtService,
     @InjectRepository(UserRepository)
@@ -44,9 +38,8 @@ export class AuthService {
     }
 
     const loggedInUser: User = await this.userRepository.createSession(user),
-      sessionHash: string = loggedInUser.session_salt;
-
-    this.userKeysToDelete.forEach((key: string) => delete loggedInUser[key]);
+      sessionHash: string = loggedInUser.session_salt,
+      cleanUser: Partial<User> = this.userRepository.removeSensativeKeys(loggedInUser);
 
     return {
       jwt_token: await this.jwtService.sign({
@@ -54,12 +47,7 @@ export class AuthService {
         email: loggedInUser.email,
         session_salt: sessionHash
       }),
-      user
+      user: cleanUser
     };
-  }
-
-  // TODO: Move to User Service
-  signUp(signupDto: UserSignupDto): Promise<User> {
-    return this.userRepository.signUp(signupDto);
   }
 }

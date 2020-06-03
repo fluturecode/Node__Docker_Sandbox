@@ -7,11 +7,13 @@ import { typeOrmConfig } from './utilities/database/typeorm.config';
 
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SentryInterceptor } from './interceptors/sentry.interceptor';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forRoot(typeOrmConfig)
+    TypeOrmModule.forRoot(typeOrmConfig),
+    UserModule
   ],
   controllers: [AppController],
   providers: [
