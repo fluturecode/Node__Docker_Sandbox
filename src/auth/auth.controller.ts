@@ -39,7 +39,7 @@ export class AuthController {
   @ApiHeader({ name: 'Authorization', description: 'JWT Token' })
   @UseGuards(JwtAuthGuard)
   @Get('logout')
-  async logout(@Request() req): Promise<string> {
+  async logout(@Request() req): Promise<{message: string}> {
     return this.authService.logout(req.user.email);
   }
 }

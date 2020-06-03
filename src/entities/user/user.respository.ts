@@ -10,6 +10,18 @@ export class UserRepository extends Repository<User> {
     return await bcrypt.compare(password, userPassword);
   }
 
+  public async createSession(user: User): Promise<User> {
+    user.session_salt = await this.generateSalt();
+
+    return user.save();
+  }
+
+  public async destroySession(user: User): Promise<User> {
+    user.session_salt = null;
+
+    return await user.save();
+  }
+
   public generateSalt(): Promise<string> {
     return bcrypt.genSalt(10);
   }

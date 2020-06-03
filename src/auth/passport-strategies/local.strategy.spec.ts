@@ -11,17 +11,17 @@ interface UserCredentials {
   password: string;
 }
 
+const testUserPayload = { id: 1, email: 'mwallert@shift3tech.com', session_salt: '2537*&endu))198' };
+
 const testUsers: Partial<User>[] = [
   {
     email: 'mwallert@shift3tech.com',
     password: 'goodpassword1',
+    session_salt: '2537*&endu))198',
     save: () => {
       return new Promise((resolve) => {
         resolve(
-          Object.assign(new User(), {
-            email: 'mwallert@shift3tech.com',
-            id: 1
-          })
+          Object.assign(new User(), testUserPayload)
         );
       });
     }
@@ -33,8 +33,9 @@ const mockJwtService = () => ({
   }),
   mockUserRespository = () => ({
     comparePassword: (password: string) => testUsers.find((u: User) => u.password === password),
+    createSession: (user: User) => Object.assign({}, testUserPayload),
     findUserByEmail: (email: string) => testUsers.find((u: User) => u.email === email),
-    generateSalt: () => 'testsalt123'
+    generateSalt: () => '2537*&endu))198'
   });
 
 describe('LocalStrategy', () => {
@@ -92,11 +93,10 @@ describe('LocalStrategy', () => {
     });
 
     it('should return the JwtResponse payload when passed valid credentials', async () => {
-      const userPayload = { id: 1, email: 'mwallert@shift3tech.com' },
-        jwtResponse = await localStrategy.validate(validUserCredentials.email, validUserCredentials.password);
+      const jwtResponse = await localStrategy.validate(validUserCredentials.email, validUserCredentials.password);
 
       expect(jwtResponse).toEqual({
-        jwt_token: userPayload,
+        jwt_token: testUserPayload,
         user: testUsers[0]
       });
     });

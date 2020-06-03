@@ -1,9 +1,9 @@
 import environment from '../../environment';
-import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 
 export class CorsUtility {
   allowedDevelopmentOrigins: string[] = ['http://localhost:4200'];
-  allowedProductionOrigins: string[] = [];
+  allowedProductionOrigins: string[] = ['https://boilerplate-client-angular.shift3sandbox.com'];
 
   constructor() {}
 

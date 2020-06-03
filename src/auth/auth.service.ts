@@ -19,14 +19,12 @@ export class AuthService {
     private userRepository: UserRepository
   ) {}
 
-  async logout(email: string): Promise<string> {
+  async logout(email: string): Promise<{message: string}> {
     const user: User = await this.userRepository.findUserByEmail(email);
 
-    user.session_salt = null;
+    await this.userRepository.destroySession(user);
 
-    await user.save();
-
-    return 'Logout successful!';
+    return {message: 'Logout successful!'};
   }
 
   async signIn(email: string, password: string): Promise<JwtResponse> {
@@ -45,14 +43,17 @@ export class AuthService {
       throw unauthorizedException;
     }
 
-    user.session_salt = await this.userRepository.generateSalt();
-
-    const loggedInUser: User = await user.save();
+    const loggedInUser: User = await this.userRepository.createSession(user),
+      sessionHash: string = loggedInUser.session_salt;
 
     this.userKeysToDelete.forEach((key: string) => delete loggedInUser[key]);
 
     return {
-      jwt_token: await this.jwtService.sign({id: loggedInUser.id, email: loggedInUser.email}),
+      jwt_token: await this.jwtService.sign({
+        id: loggedInUser.id,
+        email: loggedInUser.email,
+        session_salt: sessionHash
+      }),
       user
     };
   }
