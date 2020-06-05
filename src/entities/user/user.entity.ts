@@ -14,6 +14,9 @@ export class User extends BaseEntity {
   @Column({nullable: true})
   session_salt: string;
 
+  @Column({nullable: true})
+  password_reset_hash: string;
+
   @Column({nullable: false})
   first_name: string;
 

@@ -5,19 +5,15 @@ jobs:
     docker:
       - image: circleci/node:12.16.2
         environment:
-          DB_HOST: ${DB_HOST}
-          DB_NAME: ${DB_NAME}
-          DB_PASSWORD: ${DB_PASSWORD}
-          DB_USER: ${DB_USER}
+          DATABASE_URL: postgresql://root:goodpassword1$@localhost/circle_test?sslmode=disable
           JWT_SECRET: ${JWT_SECRET}
-          NODE_ENV: ${NODE_ENV}
-          SERVER_PORT: ${PORT}
+          NODE_ENV: test
 
-      - image: circleci/postgres:11.8
+      - image: circleci/postgres:12
         environment:
-          POSTGRES_USER: ${DB_USER}
-          POSTGRES_PASSWORD: ${DB_PASSWORD}
-          POSTGRES_DB: ${DB_NAME}
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: goodpassword1$
+          POSTGRES_DB: e2e_testing
 
     steps:
       - checkout

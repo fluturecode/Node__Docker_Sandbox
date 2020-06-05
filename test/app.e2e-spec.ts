@@ -22,7 +22,9 @@ describe('AppController (e2e)', () => {
             {
               database: 'e2e_testing',
               host: 'localhost',
-              name: 'e2e_testing'
+              name: 'e2e_testing',
+              username: 'root',
+              password: 'goodpassword1$'
             }
           )
         )

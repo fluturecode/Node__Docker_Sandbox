@@ -5,10 +5,10 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './passport-strategies/jwt.strategy';
 import { LocalStrategy } from './passport-strategies/local.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserRepository } from '@entities/user/user.respository';
 
 import environment from '../environment';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserRepository } from '../entities/user/user.respository';
 
 @Module({
   imports: [

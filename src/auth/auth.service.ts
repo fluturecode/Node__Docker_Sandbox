@@ -39,7 +39,7 @@ export class AuthService {
 
     const loggedInUser: User = await this.userRepository.createSession(user),
       sessionHash: string = loggedInUser.session_salt,
-      cleanUser: Partial<User> = this.userRepository.removeSensativeKeys(loggedInUser);
+      cleanUser: Partial<User> = this.userRepository.removeSensitiveKeys(loggedInUser);
 
     return {
       jwt_token: await this.jwtService.sign({
