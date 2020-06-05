@@ -8,14 +8,9 @@ import { LocalStrategy } from './passport-strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from '@entities/user/user.respository';
 
-import environment from '../environment';
-
 @Module({
   imports: [
-    JwtModule.register({
-      secret: environment.jwt_secret,
-      signOptions: { expiresIn: '1h' }
-    }),
+    JwtModule.register({}),
     PassportModule,
     TypeOrmModule.forFeature([
       UserRepository

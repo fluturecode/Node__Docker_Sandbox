@@ -1,37 +1,41 @@
 import { LocalStrategy } from './local.strategy';
 import { UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { AuthService } from '../auth.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserRepository } from '../../entities/user/user.respository';
-import { User } from '../../entities/user/user.entity';
+
+import { AuthService } from '../auth.service';
+import { JwtUtility } from '@utilities/jwt/jwt.utility';
+
+import { UserRepository } from '@entities/user/user.respository';
+import { User } from '@entities/user/user.entity';
+
+import { JwtResponse } from '../interfaces/jwt-response.interface';
 
 interface UserCredentials {
   email: string;
   password: string;
 }
 
-const testUserPayload = { id: 1, email: 'mwallert@shift3tech.com', session_salt: '2537*&endu))198' };
-
-const testUsers: Partial<User>[] = [
-  {
+const testUserPayload = {
+    id: 1,
     email: 'mwallert@shift3tech.com',
-    password: 'goodpassword1',
-    session_salt: '2537*&endu))198',
-    save: () => {
-      return new Promise((resolve) => {
-        resolve(
-          Object.assign(new User(), testUserPayload)
-        );
-      });
+    session_salt: '2537*&endu))198'
+  },
+  testUsers: Partial<User>[] = [
+    {
+      email: 'mwallert@shift3tech.com',
+      password: 'goodpassword1',
+      session_salt: '2537*&endu))198',
+      save: () => {
+        return new Promise((resolve) => {
+          resolve(
+            Object.assign(new User(), testUserPayload)
+          );
+        });
+      }
     }
-  }
-];
+  ];
 
-const mockJwtService = () => ({
-    sign: (payload) => payload
-  }),
-  mockUserRespository = () => ({
+const mockUserRespository = () => ({
     comparePassword: (password: string) => testUsers.find((u: User) => u.password === password),
     createSession: (user: User) => Object.assign({}, testUserPayload),
     findUserByEmail: (email: string) => testUsers.find((u: User) => u.email === email),
@@ -50,7 +54,7 @@ describe('LocalStrategy', () => {
     },
     unauthorizedException: UnauthorizedException = new UnauthorizedException('Invalid credentials');
 
-  let localStrategy: LocalStrategy;
+  let localStrategy: LocalStrategy
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,10 +62,7 @@ describe('LocalStrategy', () => {
       providers: [
         AuthService,
         LocalStrategy,
-        {
-          provide: JwtService,
-          useFactory: mockJwtService
-        },
+        JwtUtility,
         {
           provide: UserRepository,
           useFactory: mockUserRespository
@@ -94,12 +95,12 @@ describe('LocalStrategy', () => {
     });
 
     it('should return the JwtResponse payload when passed valid credentials', async () => {
-      const jwtResponse = await localStrategy.validate(validUserCredentials.email, validUserCredentials.password);
+      const jwtResponse: JwtResponse = await localStrategy.validate(
+        validUserCredentials.email,
+        validUserCredentials.password
+      );
 
-      expect(jwtResponse).toEqual({
-        jwt_token: testUserPayload,
-        user: testUsers[0]
-      });
+      expect(jwtResponse).toBeTruthy();
     });
   });
 });

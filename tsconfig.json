@@ -11,7 +11,9 @@
     "baseUrl": "./",
     "incremental": true,
     "paths": {
-      "@entities/*": ["src/entities/*"]
+      "@entities/*": ["src/entities/*"],
+      "@environment": ["src/environment"],
+      "@utilities/*": ["src/utilities/*"]
     }
   },
   "exclude": ["node_modules", "dist"]

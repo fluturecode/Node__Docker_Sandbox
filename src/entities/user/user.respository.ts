@@ -1,12 +1,13 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import { JwtUtility } from '@utilities/jwt/jwt.utility';
+
+import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
+
 import { User } from './user.entity';
 import { UserSignupDto } from '../../user/dto/user-signup.dto';
 
-import environment from '../../environment';
-
 import * as bcrypt from 'bcrypt';
-import { UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -53,44 +54,52 @@ export class UserRepository extends Repository<User> {
   }
 
   public async sendResetPasswordEmail(email: string): Promise<void> {
-    const user: User = await this.findUserByEmail(email);
+    const user: User = await this.findUserByEmail(email),
+      jwtUtility: JwtUtility = new JwtUtility();
 
     if (!user) {
       // TODO: Log attempt at password reset
       return;
     }
 
-    const resetHash: string = await this.generateSalt(),
-      jwtService: JwtService = new JwtService({
-        secret: environment.jwt_secret + resetHash,
-        signOptions: {
-          expiresIn: '1h'
-        }
-      });
+    const resetHash: string = await this.generateSalt();
+
+    jwtUtility.changeJwtOptions({
+      secret: resetHash,
+      signOptions: {
+        expiresIn: '1h'
+      }
+    });
 
     user.password_reset_hash = resetHash;
 
     await user.save();
 
-    const resetToken: string = jwtService.sign({ id: user.id });
+    const resetToken: string = jwtUtility.sign({ id: user.id, email: user.email });
 
     // TODO: Actually send the reset email when email utility is done
   }
 
   public async validateTokenAndResetPassword(token: string, newPassword: string): Promise<User> {
-    const jwtService: JwtService = new JwtService({}),
-      jwtPayload = jwtService.decode(token),
-      user = await this.findOne({ id: jwtPayload['id'] });
+    const jwtUtility: JwtUtility = new JwtUtility(),
+      jwtPayload: JwtPayload = jwtUtility.decodeJwtToken<JwtPayload>(token),
+      unauthorizedError: UnauthorizedException = new UnauthorizedException('Invalid or expired token');
+
+    if (!jwtPayload.id || !jwtPayload.email) {
+      throw unauthorizedError;
+    }
+
+    const user = await this.findOne({ id: jwtPayload.id, email: jwtPayload.email.toLowerCase() });
 
     if (user) {
-      const extraHashedJwtService: JwtService = new JwtService({
-        secret: environment.jwt_secret + user.password_reset_hash
+      jwtUtility.changeJwtOptions({
+        secret: user.password_reset_hash
       });
 
       try {
-        extraHashedJwtService.verify(token);
+        jwtUtility.verifyToken(token);
       } catch (error) {
-        throw new UnauthorizedException('Invalid or expired token');
+        throw unauthorizedError;
       }
 
       try {
@@ -109,7 +118,7 @@ export class UserRepository extends Repository<User> {
       }
     }
 
-    throw new UnauthorizedException('Invalid or expired token');
+    throw unauthorizedError;
   }
 
   public async signUp(userData: UserSignupDto): Promise<Partial<User>> {

@@ -1,17 +1,29 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../entities/user/user.respository';
-import { User } from 'src/entities/user/user.entity';
+import { User } from '@entities/user/user.entity';
 import { JwtResponse } from './interfaces/jwt-response.interface';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 @Injectable()
 export class AuthService {
+  jwtUtility: JwtUtility = new JwtUtility();
+
   constructor(
-    private jwtService: JwtService,
     @InjectRepository(UserRepository)
     private userRepository: UserRepository
   ) {}
+
+  async findUserFromJwtPayload(payload: JwtPayload): Promise<User> {
+    const { id, email } = payload;
+
+    if (!id || !email) {
+      return null;
+    }
+
+    return this.userRepository.findOne({ id: payload.id, email: email.toLowerCase() });
+  }
 
   async logout(email: string): Promise<{message: string}> {
     const user: User = await this.userRepository.findUserByEmail(email);
@@ -41,11 +53,15 @@ export class AuthService {
       sessionHash: string = loggedInUser.session_salt,
       cleanUser: Partial<User> = this.userRepository.removeSensitiveKeys(loggedInUser);
 
+    this.jwtUtility.changeJwtOptions({
+      signOptions: { expiresIn: '1h' },
+      secret: sessionHash
+    });
+
     return {
-      jwt_token: await this.jwtService.sign({
+      jwt_token: await this.jwtUtility.sign({
         id: loggedInUser.id,
-        email: loggedInUser.email,
-        session_salt: sessionHash
+        email: loggedInUser.email
       }),
       user: cleanUser
     };

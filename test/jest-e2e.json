@@ -2,7 +2,9 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
   "moduleNameMapper": {
-    "@entities/(.*)": "<rootDir>/../src/entities/$1"
+    "@entities/(.*)": "<rootDir>/../src/entities/$1",
+    "@environment": ["<rootDir>/../src/environment"],
+    "@utilities/(.*)": ["<rootDir>/../src/utilities/$1"]
   },
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",

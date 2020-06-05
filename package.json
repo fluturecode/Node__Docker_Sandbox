@@ -91,7 +91,9 @@
     ],
     "rootDir": "src",
     "moduleNameMapper": {
-      "@entities/(.*)": "<rootDir>/entities/$1"
+      "@entities/(.*)": "<rootDir>/entities/$1",
+      "@environment": ["<rootDir>/environment"],
+      "@utilities/(.*)": ["<rootDir>/utilities/$1"]
     },
     "testRegex": ".spec.ts$",
     "transform": {

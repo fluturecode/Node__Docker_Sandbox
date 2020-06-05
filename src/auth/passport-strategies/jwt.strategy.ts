@@ -1,39 +1,47 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { JwtSecretRequestType } from '@nestjs/jwt';
+
+import { AuthService } from '../auth.service';
+import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
-
-import environment from '../../environment';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserRepository } from '../../entities/user/user.respository';
-import { User } from 'src/entities/user/user.entity';
+import { User } from '@entities/user/user.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    @InjectRepository(UserRepository)
-    private userRepository: UserRepository
+    private authService: AuthService
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: environment.jwt_secret
+      secretOrKeyProvider: async (
+        requestType: JwtSecretRequestType,
+        token: string,
+        done: Function
+      ): Promise<string> => {
+        const jwtUtility: JwtUtility = new JwtUtility(),
+          tokenValues: JwtPayload = jwtUtility.decodeJwtToken<JwtPayload>(token),
+          user: User = await authService.findUserFromJwtPayload(tokenValues);
+
+        if (!user) {
+          return done(new UnauthorizedException('Invalid auth token'), null);
+        }
+
+        return done(null, jwtUtility.returnDyanmicSigningKey(user.session_salt));
+      }
     });
   }
 
   async validate(payload: JwtPayload) {
-    const { id, email, userHash } = payload,
-      user: User = await this.userRepository.findOne({
-        id,
-        email,
-        session_salt: userHash
-      });
+    const user: User = await this.authService.findUserFromJwtPayload(payload);
 
     if (!user) {
       throw new UnauthorizedException('Invalid or expired auth token');
     }
 
-    return { id, email, userHash };
+    return payload;
   }
 }
