@@ -39,3 +39,9 @@ module "eb_route53_record" {
   hosted_zone       = "${var.aws_route53_hosted_zone}"
   resource_zone_id  = "${module.tf_eb.hosted_zone_id}"
 }
+
+module "ses_through_domain_name" {
+  source      = "../ses"
+  domain_name = "${var.api_domain_name}"
+  hosted_zone = "${var.aws_route53_hosted_zone}"
+}
