@@ -22,4 +22,8 @@ export class User extends BaseEntity {
 
   @Column({nullable: false})
   last_name: string;
+
+  getFullName(): string {
+    return `${this.first_name} ${this.last_name}`;
+  }
 }

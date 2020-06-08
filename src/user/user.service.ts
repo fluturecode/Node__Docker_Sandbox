@@ -1,8 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRepository } from '../entities/user/user.respository';
+
+import { User } from '@entities/user/user.entity';
+import { UserRepository } from '@entities/user/user.respository';
+
 import { UserSignupDto } from './dto/user-signup.dto';
-import { User } from '../entities/user/user.entity';
 import { UserResetPasswordDto } from './dto/user-reset-password.dto';
 
 @Injectable()
@@ -23,6 +25,10 @@ export class UserService {
   }
 
   async sendResetPasswordEmail(email: string): Promise<{message: string}> {
+    if (!email || !email.trim().length) {
+      throw new BadRequestException('Email cannot be blank');
+    }
+
     this.userRespository.sendResetPasswordEmail(email);
 
     return { message: `If ${email} is a valid email, you will receive an email with a link to reset your password.` };

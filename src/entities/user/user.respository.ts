@@ -1,5 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+
+import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
@@ -8,11 +10,14 @@ import { User } from './user.entity';
 import { UserSignupDto } from '../../user/dto/user-signup.dto';
 
 import * as bcrypt from 'bcrypt';
+import environment from '@environment';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
+  emailUtility: EmailUtility = new EmailUtility();
   userKeysToDelete: string[] = [
     'password',
+    'password_reset_hash',
     'session_salt'
   ];
 
@@ -77,7 +82,16 @@ export class UserRepository extends Repository<User> {
 
     const resetToken: string = jwtUtility.sign({ id: user.id, email: user.email });
 
-    // TODO: Actually send the reset email when email utility is done
+    await this.emailUtility.sendSingleEmail({
+      subject: 'Forgotten Password',
+      to: user.email,
+      template: 'forgot-password',
+      templateVariables: {
+        applicationName: environment.application_name,
+        resetUrl: `${environment.client_url}/auth/reset-password/${resetToken}`,
+        user: user.getFullName()
+      }
+    });
   }
 
   public async validateTokenAndResetPassword(token: string, newPassword: string): Promise<User> {
