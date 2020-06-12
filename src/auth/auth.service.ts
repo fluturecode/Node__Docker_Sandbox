@@ -6,8 +6,11 @@ import { JwtResponse } from './interfaces/jwt-response.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
+import { ErrorLogger } from '@utilities/logging/error-logger.utility';
+
 @Injectable()
 export class AuthService {
+  errorLogger: ErrorLogger = new ErrorLogger('AuthService');
   jwtUtility: JwtUtility = new JwtUtility();
 
   constructor(
@@ -40,30 +43,50 @@ export class AuthService {
     if (!user) {
       await this.userRepository.comparePassword(password, 'q123');
 
+      this.errorLogger.log({
+        level: 'info',
+        message: `SignIn - User not found for email: ${email}`
+      });
+
       throw unauthorizedException;
     }
 
     const validPassword: boolean = await this.userRepository.comparePassword(password, user.password);
 
     if (!validPassword) {
+      this.errorLogger.log({
+        level: 'info',
+        message: `SignIn - Password did not match for user: ${user.getFullName()}`
+      });
+
       throw unauthorizedException;
     }
 
-    const loggedInUser: User = await this.userRepository.createSession(user),
-      sessionHash: string = loggedInUser.session_salt,
-      cleanUser: Partial<User> = this.userRepository.removeSensitiveKeys(loggedInUser);
+    try {
+      const loggedInUser: User = await this.userRepository.createSession(user),
+        sessionHash: string = loggedInUser.session_salt,
+        cleanUser: Partial<User> = this.userRepository.removeSensitiveKeys(loggedInUser);
 
-    this.jwtUtility.changeJwtOptions({
-      signOptions: { expiresIn: '1h' },
-      secret: sessionHash
-    });
+      this.jwtUtility.changeJwtOptions({
+        signOptions: { expiresIn: '1h' },
+        secret: sessionHash
+      });
 
-    return {
-      jwt_token: await this.jwtUtility.sign({
-        id: loggedInUser.id,
-        email: loggedInUser.email
-      }),
-      user: cleanUser
-    };
+      return {
+        jwt_token: await this.jwtUtility.sign({
+          id: loggedInUser.id,
+          email: loggedInUser.email
+        }),
+        user: cleanUser
+      };
+    } catch (error) {
+      this.errorLogger.log({
+        level: 'error',
+        message: `SignIn - Failed to login user: ${user.getFullName()}`,
+        error
+      });
+
+      throw error;
+    }
   }
 }

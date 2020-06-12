@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, INestApplication, InternalServerErrorException } from '@nestjs/common';
+import { Logger, INestApplication } from '@nestjs/common';
 
 import { DatabaseUtility } from './utilities/database';
 import { SwaggerUtility } from './utilities/swagger';

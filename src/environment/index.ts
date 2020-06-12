@@ -4,6 +4,7 @@ if (process.env.NODE_ENV === 'test') {
   dotenv.config();
 
   process.env.DB_HOST = 'localhost';
+  process.env.ERROR_LOGS = 'src/server-logs';
 }
 
 export default {
@@ -16,6 +17,7 @@ export default {
   db_port: parseInt(process.env.DB_PORT, 10) || 5432,
   db_user: process.env.DB_USER,
   email_domain: process.env.EMAIL_DOMAIN,
+  error_logs_directory: process.env.ERROR_LOGS,
   jwt_secret: process.env.JWT_SECRET,
   node_env: process.env.NODE_ENV,
   port: parseInt(process.env.PORT, 10) || 3000,

@@ -22,9 +22,14 @@ const testUserPayload = {
   },
   testUsers: Partial<User>[] = [
     {
+      first_name: 'Michael',
+      last_name: 'Wallert',
       email: 'mwallert@shift3tech.com',
       password: 'goodpassword1',
       session_salt: '2537*&endu))198',
+      getFullName: () => {
+        return `${this.first_name} ${this.last_name}`;
+      },
       save: () => {
         return new Promise((resolve) => {
           resolve(
