@@ -24,7 +24,11 @@ Docker cli documentation:
 
 ## Project Setup
 
-Once Docker and docker-compose are installed correctly, simply run `docker-compose up` from the root. This will startup both the server and the postgres database. Once the server is up and running simply navigate to [localhost:3000](http://localhost:3000)!
+Obtain a .env file from the Zoho Vault and plave it in the root directory of the project. Once Docker and docker-compose are installed correctly, simply run `docker-compose up` from the root. This will startup both the server and the postgres database.
+
+The postgres database will have the name and user credentials that are specified in the .env file. If you need to change them and don't mind resetting the database, you will have to use the command `docker-compose down -v` to remove both the containers and the volumes.
+
+Once the server is up and running simply navigate to [localhost:3000](http://localhost:3000)! The database should be connectable via a database client such as [PGAdmin](https://www.pgadmin.org/) or [DBeaver](https://dbeaver.io/) by using the credentials in your .env to connect to [localhost:5432].
 
 ### Environment Variables
 
