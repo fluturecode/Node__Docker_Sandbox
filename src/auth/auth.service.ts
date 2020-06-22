@@ -7,10 +7,12 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 import { ErrorLogger } from '@utilities/logging/error-logger.utility';
+import { EventLogger } from '@utilities/logging/event-logger.utility';
 
 @Injectable()
 export class AuthService {
   errorLogger: ErrorLogger = new ErrorLogger('AuthService');
+  eventLogger: EventLogger = new EventLogger();
   jwtUtility: JwtUtility = new JwtUtility();
 
   constructor(

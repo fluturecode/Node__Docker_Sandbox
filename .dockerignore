@@ -17,3 +17,4 @@ Dockerrun.aws.json
 Dockerrun.example.aws.json
 Dockerfile.dev
 Dockerfile.prod
+server-logs

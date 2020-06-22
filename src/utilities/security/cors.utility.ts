@@ -7,7 +7,9 @@ export class CorsUtility {
     'http://localhost:3000'
   ];
   allowedProductionOrigins: string[] = [
-    'https://boilerplate-client-angular.shift3sandbox.com'
+    undefined,
+    'https://boilerplate-client-angular.shift3sandbox.com',
+    'https://boilerplate-server-node.shift3sandbox.com'
   ];
 
   constructor() {}

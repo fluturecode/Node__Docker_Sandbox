@@ -1,13 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { JwtSecretRequestType } from '@nestjs/jwt';
 
 import { AuthService } from '../auth.service';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { User } from '@entities/user/user.entity';
+import { Request } from 'express';
+import { JwtSecretRequestType } from '@nestjs/jwt';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,6 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
+      passReqToCallback: true,
       secretOrKeyProvider: async (
         requestType: JwtSecretRequestType,
         token: string,
@@ -35,13 +37,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(req: Request, payload: JwtPayload) {
     const user: User = await this.authService.findUserFromJwtPayload(payload);
 
     if (!user) {
       throw new UnauthorizedException('Invalid or expired auth token');
     }
 
-    return payload;
+    return user;
   }
 }

@@ -2,17 +2,21 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, INestApplication } from '@nestjs/common';
 
-import { DatabaseUtility } from './utilities/database';
-import { SwaggerUtility } from './utilities/swagger';
+import { CorsUtility } from '@utilities/security/cors.utility';
+import { DatabaseUtility } from '@utilities/database';
+import { EventLogger } from '@utilities/logging/event-logger.utility';
+import { SwaggerUtility } from '@utilities/swagger';
 
-import environment from './environment';
-import { CorsUtility } from './utilities/security/cors.utility';
+import environment from '@environment';
 
 import * as sentry from '@sentry/node';
+import { EventLoggerInterceptor } from './interceptors/event-logger.interceptor';
+import { Request, Response, NextFunction } from 'express';
 
 class BoilerplateServer {
   app: INestApplication;
   databaseUtility: DatabaseUtility = new DatabaseUtility();
+  eventLogger: EventLogger = new EventLogger();
   swaggerUtility: SwaggerUtility = new SwaggerUtility();
 
   constructor() {}
@@ -27,6 +31,8 @@ class BoilerplateServer {
     this.app.enableCors(new CorsUtility().returnCorsConfig());
 
     this.swaggerUtility.initializeSwagger(this.app);
+
+    this.app.useGlobalInterceptors(new EventLoggerInterceptor());
 
     await this.app.listen(environment.port);
 

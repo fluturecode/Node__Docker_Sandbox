@@ -1,7 +1,8 @@
-import * as winston from 'winston';
 import * as moment from 'moment';
+import * as winston from 'winston';
 
 import environment from '@environment';
+import { ensureFullPath, scrubData } from './logging.helper';
 
 export interface LogConfig {
   error?: Error;
@@ -15,11 +16,22 @@ export class ErrorLogger {
   serverLogsPath: string = environment.error_logs_directory;
   winstonLogger: winston.Logger;
 
-  constructor(service?: string) {
-    this.combinedLogsPath = `${this.serverLogsPath}/${moment().format('MM-DD-YYYY')}-combined.log`;
-    this.errorLogPath = `${this.serverLogsPath}/${moment().format('MM-DD-YYYY')}-errors.log`;
+  constructor(serviceName?: string) {
+    this.combinedLogsPath = `${this.serverLogsPath}/error-logs/${moment().format('YYYY-MM-DD')}-combined.log`;
+    this.errorLogPath = `${this.serverLogsPath}/error-logs/${moment().format('YYYY-MM-DD')}-errors.log`;
 
-    this.setupLogger(service);
+    ensureFullPath(`${this.serverLogsPath}/error-logs`);
+
+    this.setupLogger(serviceName);
+  }
+
+  public addStream(path: string) {
+    this.winstonLogger.add(
+      new winston.transports.File({
+        format: this.levelFilter('error'),
+        filename: `${this.serverLogsPath}/${path}`,
+      })
+    );
   }
 
   private setupLogger(service?: string): void {
@@ -34,12 +46,12 @@ export class ErrorLogger {
       transports: [
         new winston.transports.File({
           format: this.levelFilter('error'),
-          filename: this.combinedLogsPath,
-          handleExceptions: true
+          filename: this.combinedLogsPath
         }),
         new winston.transports.File({
           filename: this.errorLogPath,
-          level: 'error'
+          level: 'error',
+          handleExceptions: true
         })
       ]
     });
@@ -61,9 +73,8 @@ export class ErrorLogger {
 
     this.winstonLogger.log(
       logConfig.level || 'info',
-      logConfig.message,
+      scrubData(logConfig.message, ['jwt_token', 'password']),
       logConfig.error
     );
   }
-
 }

@@ -4,7 +4,7 @@ if (process.env.NODE_ENV === 'test') {
   dotenv.config();
 
   process.env.DB_HOST = 'localhost';
-  process.env.ERROR_LOGS = 'src/server-logs';
+  process.env.ERROR_LOGS = `${__dirname}/../server-logs`;
 }
 
 export default {
