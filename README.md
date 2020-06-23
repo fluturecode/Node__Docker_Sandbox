@@ -1,5 +1,7 @@
 # Shift3 NodeJs Boilerplate Server
 
+[![CircleCI](https://circleci.com/gh/Shift3/boilerplate-server-node.svg?style=svg&circle-token=7f194099af758d7db29fee056afd5859543e50d4)](https://circleci.com/gh/Shift3/boilerplate-server-node)
+
 NodeJs server written in Typescript. This will serve as a base point for any new Shift3 NodeJs projects.
 
 ## Project Requirements
@@ -22,6 +24,10 @@ Docker for the most part is run from the terminal, the docker cli is fairly stra
 Docker cli documentation:
 - [Docker Cli](https://docs.docker.com/engine/reference/commandline/cli/)
 
+### Environment Variables
+
+Copy the .env.example file into .env at the root of the project. Then grab the environment variables from a developer on the project of Zoho Vault.
+
 ## Project Setup
 
 Obtain a .env file from the Zoho Vault and plave it in the root directory of the project. Once Docker and docker-compose are installed correctly, simply run `docker-compose up` from the root. This will startup both the server and the postgres database.
@@ -30,11 +36,9 @@ The postgres database will have the name and user credentials that are specified
 
 Once the server is up and running simply navigate to [localhost:3000](http://localhost:3000)! The database should be connectable via a database client such as [PGAdmin](https://www.pgadmin.org/) or [DBeaver](https://dbeaver.io/) by using the credentials in your .env to connect to [localhost:5432].
 
-### Environment Variables
-
-PORT=
-
 ## Development Process
+
+TBD
 
 ## Description
 
