@@ -2,7 +2,7 @@
 name: Epic Issue Template
 about: Issue template used for Epics
 title: ''
-labels: ''
+labels: Epic
 assignees: mwallert
 
 ---

@@ -2,7 +2,7 @@
 name: Feature
 about: Issue template for new feature requests
 title: ''
-labels: ''
+labels: Feature
 assignees: mwallert
 
 ---
