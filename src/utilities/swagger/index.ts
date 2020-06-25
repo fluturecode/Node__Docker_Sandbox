@@ -13,7 +13,7 @@ export class SwaggerUtility {
       .addBearerAuth()
       .setTitle('Node Boilerplate')
       .setDescription('Shift3 Node boilerplate built on Nestjs')
-      .setVersion('0.0.1')
+      .setVersion('0.1.1')
       .build();
 
     const swaggerDocument = SwaggerModule.createDocument(this.app, swaggerDocumentBuilder);
