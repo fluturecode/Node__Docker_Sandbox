@@ -10,6 +10,7 @@ import { ensureFullPath, scrubData } from './logging.helper';
 
 export class EventLogger {
   private defaultFormat: string = ':date - Method: :method Url: :url HTTP/:http-version - Address: :remote-addr - Agent: :user-agent';
+  private keysToScrub: string[] = ['jwt_token', 'password'];
   private requestEventLogger;
   private responseEventLogger;
 
@@ -19,16 +20,16 @@ export class EventLogger {
 
   public logIncomingRequest(request: Request, response: Response) {
     const requestUser: string = scrubData(
-      JSON.stringify(request.user),
-      ['jwt_token', 'password']
+      this.stringifyPayloadWithSpace(request.user),
+      this.keysToScrub
     );
 
     let requestFormat: string = `Incoming Request: ${this.defaultFormat} - User: ${requestUser}`;
 
     if (['POST', 'PUT'].includes(request.method)) {
       requestFormat += scrubData(
-        ` - Request Body: ${JSON.stringify(request.body)}`,
-        ['jwt_token', 'password']
+        ` - Request Body: ${this.stringifyPayloadWithSpace(request.body)}`,
+        this.keysToScrub
       );
     }
 
@@ -39,37 +40,21 @@ export class EventLogger {
       )
     });
 
-    this.requestEventLogger(request, response, () => {});
-  }
-
-  private ensureLogPathExists(path: string) {
-    const pathSplit: string[] = path.split('/');
-
-    pathSplit.reduce((currentPath: string, nextFolder: string) => {
-      if (nextFolder) {
-        currentPath += `/${nextFolder}`;
-
-        if (!fs.existsSync(currentPath)) {
-          fs.mkdirSync(currentPath);
-        }
-      }
-
-      return currentPath;
-    }, '');
+    this.requestEventLogger(request, response,  () => {});
   }
 
   public logServerResponse(request: Request, response: Response, data?: any) {
     const requestUser: string = scrubData(
-      JSON.stringify(request.user),
-      ['jwt_token', 'password']
+      this.stringifyPayloadWithSpace(request.user),
+      this.keysToScrub
     );
 
     let responseFormat: string = `Server Response: ${this.defaultFormat} - User: ${requestUser} - Status: ${data.status || response.statusCode}`;
 
     if (data.payload) {
       responseFormat += scrubData(
-        ` - Response Payload: ${JSON.stringify(data.payload)}`,
-        ['jwt_token', 'password']
+        ` - Response Payload: ${this.stringifyPayloadWithSpace(data.payload)}`,
+        this.keysToScrub
       );
     }
 
@@ -81,5 +66,13 @@ export class EventLogger {
     });
 
     this.responseEventLogger(request, response, () => {});
+  }
+
+  private stringifyPayloadWithSpace(payload: object): string {
+    if (payload) {
+      return JSON.stringify(payload, null, 1).replace(/\n/g, '');
+    }
+
+    return "null";
   }
 }

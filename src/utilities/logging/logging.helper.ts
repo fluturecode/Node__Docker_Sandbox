@@ -19,7 +19,10 @@ export function ensureFullPath(path: string): void {
 export function scrubData (dataString: string, keys: string[]): string {
   if (dataString) {
     (keys || this.keysToScrub).forEach(key => {
-      dataString = dataString.replace(new RegExp(`("${key}":)+"+.{0,}"+`, 'gi'), `"key_removed": true`);
+      dataString = dataString.replace(
+        new RegExp(`("${key}":)([ ]\")([^",]*)(\")`, 'gi'),
+        `"key_removed": "true"`
+      );
     });
   }
 

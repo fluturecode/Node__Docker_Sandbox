@@ -11,6 +11,7 @@
     "baseUrl": "./",
     "incremental": true,
     "paths": {
+      "@consts/*": ["src/consts/*"],
       "@entities/*": ["src/entities/*"],
       "@environment": ["src/environment"],
       "@utilities/*": ["src/utilities/*"]

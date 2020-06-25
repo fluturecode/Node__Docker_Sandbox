@@ -25,7 +25,8 @@ export class JwtUtility {
 
   decodeJwtToken<T>(token: string): T {
     const jsonSplit = token.split('.')[1],
-      decodedPayload = JSON.parse(Buffer.from(jsonSplit, 'base64').toString('ascii'));
+      payloadBuffer = Buffer.from(jsonSplit || '', 'base64').toString('ascii'),
+      decodedPayload = JSON.parse(payloadBuffer || "{}");
 
     return decodedPayload;
   }

@@ -1,31 +1,34 @@
-import { IsString, MinLength, Matches } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
-
-const includesOneUpperLowerSpecialCharAndNumber: RegExp = /(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+import { IsString, MinLength, Matches, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { ValidPassword } from '@consts/validation.consts';
 
 export class UserSignupDto {
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   @MinLength(5)
   email: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   @MinLength(8)
   @Matches(
-    includesOneUpperLowerSpecialCharAndNumber,
+    ValidPassword.validation,
     {
-      message: 'Password needs to include 1 uppercase letter, 1 lowercase letter and 1 number or special character.'
+      message: ValidPassword.message
     }
   )
   password: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   @MinLength(1)
   first_name: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   @MinLength(1)
   last_name: string;

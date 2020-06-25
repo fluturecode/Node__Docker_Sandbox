@@ -2,6 +2,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
   "moduleNameMapper": {
+    "@consts/(.*)": "<rootDir>/../src/consts/$1",
     "@entities/(.*)": "<rootDir>/../src/entities/$1",
     "@environment": ["<rootDir>/../src/environment"],
     "@utilities/(.*)": ["<rootDir>/../src/utilities/$1"]

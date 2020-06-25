@@ -1,5 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import { UnauthorizedException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { DatabaseErrorCodes } from '@consts/error-codes.consts';
 
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
@@ -22,7 +23,7 @@ export class UserRepository extends Repository<User> {
   ];
 
   public async comparePassword(password: string, userPassword: string): Promise<boolean> {
-    return await bcrypt.compare(password, userPassword);
+    return await bcrypt.compare(password.toString(), userPassword);
   }
 
   public async createSession(user: User): Promise<User> {
@@ -42,12 +43,12 @@ export class UserRepository extends Repository<User> {
   }
 
   public async findUserByEmail(email: string): Promise<User> {
-    return await this.findOne({ email: email.toLowerCase() });
+    return await this.findOne({ email: email.toString().toLowerCase() });
   }
 
   public async hashPassword(password: string): Promise<string> {
     const salt: string = await this.generateSalt(),
-      passwordHash: string = await bcrypt.hash(password, salt);
+      passwordHash: string = await bcrypt.hash(password.toString(), salt);
 
     return passwordHash;
   }
@@ -136,14 +137,25 @@ export class UserRepository extends Repository<User> {
   }
 
   public async signUp(userData: UserSignupDto): Promise<Partial<User>> {
-    const user: User = this.create();
+    try {
+      const duplicateUser: User = await this.findUserByEmail(userData.email);
 
-    userData.password = await this.hashPassword(userData.password);
+      if (duplicateUser) {
+        throw new BadRequestException(`A user with email: ${userData.email} already exists.`);
+      }
 
-    Object.assign(user, userData);
+      const user: User = this.create();
 
-    const savedUser: User = await user.save();
+      userData.email = userData.email.toLowerCase();
+      userData.password = await this.hashPassword(userData.password);
 
-    return this.removeSensitiveKeys(savedUser);
+      Object.assign(user, userData);
+
+      const savedUser: User = await user.save();
+
+      return this.removeSensitiveKeys(savedUser);
+    } catch (error) {
+      throw error;
+    }
   }
 }
