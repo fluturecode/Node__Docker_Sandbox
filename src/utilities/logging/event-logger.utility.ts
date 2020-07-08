@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
+import { ensureFullPath, scrubData } from './logging.helper';
+
+import { User } from '@entities/user/user.entity';
 
 import environment from '@environment';
 
+import * as _ from 'lodash';
 import * as fs from 'fs';
 import * as moment from 'moment';
 import * as morgan from 'morgan';
-
-import { ensureFullPath, scrubData } from './logging.helper';
 
 export class EventLogger {
   private defaultFormat: string = ':date - Method: :method Url: :url HTTP/:http-version - Address: :remote-addr - Agent: :user-agent';
@@ -19,19 +21,12 @@ export class EventLogger {
   }
 
   public logIncomingRequest(request: Request, response: Response) {
-    const requestUser: string = scrubData(
+    const requestUser: {user: User} = JSON.parse(scrubData(
       this.stringifyPayloadWithSpace(request.user),
       this.keysToScrub
-    );
+    ));
 
-    let requestFormat: string = `Incoming Request: ${this.defaultFormat} - User: ${requestUser}`;
-
-    if (['POST', 'PUT'].includes(request.method)) {
-      requestFormat += scrubData(
-        ` - Request Body: ${this.stringifyPayloadWithSpace(request.body)}`,
-        this.keysToScrub
-      );
-    }
+    const requestFormat: string = `Incoming Request: ${this.defaultFormat} - UserId: ${_.get(requestUser, 'user.id', 'Unknown User')}`;
 
     this.requestEventLogger = morgan(requestFormat, {
       stream: fs.createWriteStream(
@@ -44,19 +39,12 @@ export class EventLogger {
   }
 
   public logServerResponse(request: Request, response: Response, data?: any) {
-    const requestUser: string = scrubData(
+    const requestUser: {user: User} = JSON.parse(scrubData(
       this.stringifyPayloadWithSpace(request.user),
       this.keysToScrub
-    );
+    ));
 
-    let responseFormat: string = `Server Response: ${this.defaultFormat} - User: ${requestUser} - Status: ${data.status || response.statusCode}`;
-
-    if (data.payload) {
-      responseFormat += scrubData(
-        ` - Response Payload: ${this.stringifyPayloadWithSpace(data.payload)}`,
-        this.keysToScrub
-      );
-    }
+    const responseFormat: string = `Server Response: ${this.defaultFormat} - UserId: ${_.get(requestUser, 'user.id', 'Unknown User')} - Status: ${data.status || response.statusCode}`;
 
     this.responseEventLogger = morgan(responseFormat, {
       stream: fs.createWriteStream(

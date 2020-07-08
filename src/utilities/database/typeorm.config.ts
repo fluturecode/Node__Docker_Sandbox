@@ -20,5 +20,5 @@ export const typeOrmConfig: ConnectionOptions = {
     migrations: [
         `${__dirname}/../../migrations/*.{js,ts}`
     ],
-    synchronize: true
+    synchronize: false
 };

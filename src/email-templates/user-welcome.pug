@@ -1,0 +1,9 @@
+extends layout
+
+block mainContent
+  h1 Hello and welcome to #{applicationName} #{user}!
+  p Your account has already been created, however we require that you set your own password before your account is activated.
+  p Please click the link below to activate your account:
+  p
+    a(href=activationUrl, style="font-size: 18px;" target="_blank" rel="noopener noreferrer") Account Activation
+  p(style="font-style: italic;") This email was sent from an address that cannot accept incoming email. Please do not reply to this message.

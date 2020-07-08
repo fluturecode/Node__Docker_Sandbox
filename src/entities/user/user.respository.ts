@@ -1,62 +1,69 @@
-import { EntityRepository, Repository } from 'typeorm';
-import { UnauthorizedException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
-import { DatabaseErrorCodes } from '@consts/error-codes.consts';
+import * as bcrypt from 'bcrypt';
+import { EntityRepository, Repository, IsNull, Not } from 'typeorm';
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
-import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
-
 import { User } from './user.entity';
+import { UserCreationDto } from 'src/user/dto/user-creation.dto';
 import { UserSignupDto } from '../../user/dto/user-signup.dto';
 
-import * as bcrypt from 'bcrypt';
 import environment from '@environment';
+import { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   emailUtility: EmailUtility = new EmailUtility();
-  userKeysToDelete: string[] = [
-    'password',
-    'password_reset_hash',
-    'session_salt'
-  ];
+
+  public async createUser(userData: UserSignupDto | UserCreationDto): Promise<User> {
+    const duplicateUser: User = await this.findUserByEmail(userData.email);
+
+    if (duplicateUser) {
+      throw new BadRequestException(`A user with email: ${userData.email} already exists.`);
+    }
+
+    const newUser: User = this.create();
+
+    Object.assign(newUser, userData);
+
+    return newUser.save();
+  }
 
   public async comparePassword(password: string, userPassword: string): Promise<boolean> {
     return await bcrypt.compare(password.toString(), userPassword);
   }
 
   public async createSession(user: User): Promise<User> {
-    user.session_salt = await this.generateSalt();
+    user.sessionSalt = await bcrypt.genSalt(10);
 
     return user.save();
   }
 
   public async destroySession(user: User): Promise<User> {
-    user.session_salt = null;
+    user.sessionSalt = null;
 
     return await user.save();
   }
 
-  public generateSalt(): Promise<string> {
-    return bcrypt.genSalt(10);
+  public findAllUsers(): Promise<User[]> {
+    return this.find(
+      {
+        order: { 'id': 'DESC' }
+      }
+    );
+  }
+
+  public async findUserByJwtPayload(jwtPayload: JwtPayload): Promise<User> {
+    return await this.findOne({ id: jwtPayload.id, email: jwtPayload.email.toLowerCase() });
+  }
+
+  public async findActivatedUserByEmail(email: string): Promise<User> {
+    return await this.findOne({ email: email.toLowerCase(), activatedAt: Not(IsNull()) });
   }
 
   public async findUserByEmail(email: string): Promise<User> {
     return await this.findOne({ email: email.toString().toLowerCase() });
-  }
-
-  public async hashPassword(password: string): Promise<string> {
-    const salt: string = await this.generateSalt(),
-      passwordHash: string = await bcrypt.hash(password.toString(), salt);
-
-    return passwordHash;
-  }
-
-  public removeSensitiveKeys(user: User): Partial<User> {
-    this.userKeysToDelete.forEach((key: string) => delete user[key]);
-
-    return user;
   }
 
   public async sendResetPasswordEmail(email: string): Promise<void> {
@@ -68,16 +75,16 @@ export class UserRepository extends Repository<User> {
       return;
     }
 
-    const resetHash: string = await this.generateSalt();
+    const tokenHash: string = await bcrypt.genSalt(10);
 
     jwtUtility.changeJwtOptions({
-      secret: resetHash,
+      secret: tokenHash,
       signOptions: {
         expiresIn: '1h'
       }
     });
 
-    user.password_reset_hash = resetHash;
+    user.temporaryTokenHash = tokenHash;
 
     await user.save();
 
@@ -95,67 +102,23 @@ export class UserRepository extends Repository<User> {
     });
   }
 
-  public async validateTokenAndResetPassword(token: string, newPassword: string): Promise<User> {
-    const jwtUtility: JwtUtility = new JwtUtility(),
-      jwtPayload: JwtPayload = jwtUtility.decodeJwtToken<JwtPayload>(token),
-      unauthorizedError: UnauthorizedException = new UnauthorizedException('Invalid or expired token');
-
-    if (!jwtPayload.id || !jwtPayload.email) {
-      throw unauthorizedError;
-    }
-
-    const user = await this.findOne({ id: jwtPayload.id, email: jwtPayload.email.toLowerCase() });
-
-    if (user) {
-      jwtUtility.changeJwtOptions({
-        secret: user.password_reset_hash
-      });
-
-      try {
-        jwtUtility.verifyToken(token);
-      } catch (error) {
-        throw unauthorizedError;
-      }
-
-      try {
-        Object.assign(
-          user,
-          {
-            password: await this.hashPassword(newPassword),
-            password_reset_hash: null,
-            session_salt: null
-          }
-        );
-
-        return await user.save();
-      } catch (error) {
-        throw new InternalServerErrorException(error);
-      }
-    }
-
-    throw unauthorizedError;
-  }
-
-  public async signUp(userData: UserSignupDto): Promise<Partial<User>> {
+  public async setPassword(user: User, password: string): Promise<User> {
     try {
-      const duplicateUser: User = await this.findUserByEmail(userData.email);
+      await user.hashPassword(password);
 
-      if (duplicateUser) {
-        throw new BadRequestException(`A user with email: ${userData.email} already exists.`);
-      }
+      Object.assign(
+        user,
+        {
+          temporaryTokenHash: null,
+          sessionSalt: null
+        }
+      );
 
-      const user: User = this.create();
+      const updatedUser: User = await user.save();
 
-      userData.email = userData.email.toLowerCase();
-      userData.password = await this.hashPassword(userData.password);
-
-      Object.assign(user, userData);
-
-      const savedUser: User = await user.save();
-
-      return this.removeSensitiveKeys(savedUser);
+      return updatedUser;
     } catch (error) {
-      throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 }

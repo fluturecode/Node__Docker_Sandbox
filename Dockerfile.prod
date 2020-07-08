@@ -13,7 +13,7 @@ ENV PATH /opt/node/node_modules/.bin:$PATH
 
 WORKDIR /opt/node/app
 
-RUN mkdir p server-logs; exit 0
+RUN mkdir p server-logs; exit 0;
 RUN mkdir p server-logs/error-logs; exit 0;
 RUN mkdir p server-logs/event-logs; exit 0;
 

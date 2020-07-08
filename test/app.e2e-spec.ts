@@ -37,11 +37,11 @@ describe('AppController (e2e)', () => {
     await getConnection('default').close();
   });
 
-  it('/ (GET)', () => {
+  it('/health-check (GET) should return a valid health check', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/health-check')
       .expect(200)
-      .expect('Hello World nest installed!');
+      .expect('Server up and healthy!');
   });
 
   it('/auth/logout (GET) should return a 401', () => {

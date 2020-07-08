@@ -15,8 +15,8 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return the welcome message', () => {
-      expect(appController.getHello()).toBe('Hello World nest installed!');
+    it('should return the health-check message', () => {
+      expect(appController.healthCheck()).toBe('Server up and healthy!');
     });
   });
 });

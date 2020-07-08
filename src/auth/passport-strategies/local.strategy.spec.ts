@@ -8,8 +8,6 @@ import { JwtUtility } from '@utilities/jwt/jwt.utility';
 import { UserRepository } from '@entities/user/user.respository';
 import { User } from '@entities/user/user.entity';
 
-import { JwtResponse } from '../interfaces/jwt-response.interface';
-
 interface UserCredentials {
   email: string;
   password: string;
@@ -18,17 +16,20 @@ interface UserCredentials {
 const testUserPayload = {
     id: 1,
     email: 'mwallert@shift3tech.com',
-    session_salt: '2537*&endu))198'
+    sessionSalt: '2537*&endu))198'
   },
   testUsers: Partial<User>[] = [
     {
-      first_name: 'Michael',
-      last_name: 'Wallert',
+      id: 1,
+      firstName: 'Michael',
+      lastName: 'Wallert',
       email: 'mwallert@shift3tech.com',
       password: 'goodpassword1',
-      session_salt: '2537*&endu))198',
+      sessionSalt: '2537*&endu))198',
+      temporaryTokenHash: 'c6DMv%71mVg0c3',
+      activatedAt: new Date(),
       getFullName: () => {
-        return `${this.first_name} ${this.last_name}`;
+        return `${this.firstName} ${this.lastName}`;
       },
       save: () => {
         return new Promise((resolve) => {
@@ -41,12 +42,11 @@ const testUserPayload = {
   ];
 
 const mockUserRespository = () => ({
-    comparePassword: (password: string) => testUsers.find((u: User) => u.password === password),
-    createSession: (user: User) => Object.assign({}, testUserPayload),
-    findUserByEmail: (email: string) => testUsers.find((u: User) => u.email === email),
-    generateSalt: () => '2537*&endu))198',
-    removeSensitiveKeys: () => testUsers[0]
-  });
+  comparePassword: (password: string) => testUsers.find((u: User) => u.password === password),
+  createSession: (user: User) => Object.assign({}, testUserPayload),
+  findActivatedUserByEmail: (email: string) => testUsers.find((u: User) => u.email === email && u.activatedAt),
+  generateSalt: () => '2537*&endu))198'
+});
 
 describe('LocalStrategy', () => {
   const invalidUserCredentials: UserCredentials = {
@@ -59,7 +59,7 @@ describe('LocalStrategy', () => {
     },
     unauthorizedException: UnauthorizedException = new UnauthorizedException('Invalid credentials');
 
-  let localStrategy: LocalStrategy
+  let localStrategy: LocalStrategy;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -100,7 +100,7 @@ describe('LocalStrategy', () => {
     });
 
     it('should return the JwtResponse payload when passed valid credentials', async () => {
-      const jwtResponse: JwtResponse = await localStrategy.validate(
+      const jwtResponse = await localStrategy.validate(
         validUserCredentials.email,
         validUserCredentials.password
       );

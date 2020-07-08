@@ -12,6 +12,8 @@ import { JwtSecretRequestType } from '@nestjs/jwt';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  private jwtUtility: JwtUtility = new JwtUtility();
+
   constructor(
     private authService: AuthService
   ) {
@@ -24,15 +26,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         token: string,
         done: Function
       ): Promise<string> => {
-        const jwtUtility: JwtUtility = new JwtUtility(),
-          tokenValues: JwtPayload = jwtUtility.decodeJwtToken<JwtPayload>(token),
+        const tokenValues: JwtPayload = this.jwtUtility.decodeJwtToken<JwtPayload>(token),
           user: User = await authService.findUserFromJwtPayload(tokenValues);
 
         if (!user) {
           return done(new UnauthorizedException('Invalid auth token'), null);
         }
 
-        return done(null, jwtUtility.returnDyanmicSigningKey(user.session_salt));
+        return done(null, this.jwtUtility.returnDyanmicSigningKey(user.sessionSalt));
       }
     });
   }

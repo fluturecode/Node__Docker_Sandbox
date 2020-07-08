@@ -2,12 +2,13 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../entities/user/user.respository';
 import { User } from '@entities/user/user.entity';
-import { JwtResponse } from './interfaces/jwt-response.interface';
+import { JwtResponseDto } from './dto/jwt-response.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 import { ErrorLogger } from '@utilities/logging/error-logger.utility';
 import { EventLogger } from '@utilities/logging/event-logger.utility';
+import { classToPlain, plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -27,19 +28,19 @@ export class AuthService {
       return null;
     }
 
-    return this.userRepository.findOne({ id: payload.id, email: email.toLowerCase() });
+    return this.userRepository.findUserByJwtPayload(payload);
   }
 
   async logout(email: string): Promise<{message: string}> {
-    const user: User = await this.userRepository.findUserByEmail(email);
+    const user: User = await this.userRepository.findActivatedUserByEmail(email);
 
     await this.userRepository.destroySession(user);
 
     return {message: 'Logout successful!'};
   }
 
-  async signIn(email: string, password: string): Promise<JwtResponse> {
-    const user: User = await this.userRepository.findUserByEmail(email),
+  async signIn(email: string, password: string): Promise<JwtResponseDto> {
+    const user: User = await this.userRepository.findActivatedUserByEmail(email),
       unauthorizedException: UnauthorizedException = new UnauthorizedException('Invalid credentials');
 
     if (!user) {
@@ -47,7 +48,7 @@ export class AuthService {
 
       this.errorLogger.log({
         level: 'info',
-        message: `SignIn - User not found for email: ${email}`
+        message: `SignIn - Activated user not found for email: ${email}`
       });
 
       throw unauthorizedException;
@@ -66,21 +67,20 @@ export class AuthService {
 
     try {
       const loggedInUser: User = await this.userRepository.createSession(user),
-        sessionHash: string = loggedInUser.session_salt,
-        cleanUser: Partial<User> = this.userRepository.removeSensitiveKeys(loggedInUser);
+        sessionHash: string = loggedInUser.sessionSalt;
 
       this.jwtUtility.changeJwtOptions({
         signOptions: { expiresIn: '1h' },
         secret: sessionHash
       });
 
-      return {
+      return new JwtResponseDto({
         jwt_token: await this.jwtUtility.sign({
           id: loggedInUser.id,
           email: loggedInUser.email
         }),
-        user: cleanUser
-      };
+        user: loggedInUser
+      });
     } catch (error) {
       this.errorLogger.log({
         level: 'error',

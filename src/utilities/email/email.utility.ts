@@ -4,6 +4,8 @@ import * as pug from 'pug';
 
 import environment from '@environment';
 
+import { ErrorLogger } from '@utilities/logging/error-logger.utility';
+
 interface EmailConfig {
   html: string;
   from: string;
@@ -25,6 +27,7 @@ interface MailerConfig {
 export class EmailUtility {
   emailFromFallback: string = `${environment.application_name} Admin`;
   emailTemplatesPath: string = `${__dirname}/../../email-templates`;
+  errorLogger: ErrorLogger = new ErrorLogger('EmailUtility');
   mailTransport;
 
   constructor() {
@@ -62,8 +65,13 @@ export class EmailUtility {
 
       await this.mailTransport.sendMail(emailConfig);
     } catch (error) {
-      // Handle Error
-      console.error(error);
+      this.errorLogger.log({
+        error,
+        level: error,
+        message: `Email delivery failure. Email For: ${to}, Subject: ${subject}, Template: ${template}`
+      });
+
+      throw error;
     }
   }
 

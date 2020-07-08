@@ -6,7 +6,13 @@ export class UserResetPasswordDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  confirm_password: string;
+  @Matches(
+    ValidPassword.validation,
+    {
+      message: ValidPassword.message
+    }
+  )
+  confirmPassword: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -17,5 +23,5 @@ export class UserResetPasswordDto {
       message: ValidPassword.message
     }
   )
-  new_password: string;
+  newPassword: string;
 }
