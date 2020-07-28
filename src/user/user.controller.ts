@@ -14,11 +14,15 @@ import {
 import { ApiTags, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UserCreationDto } from './dto/user-creation.dto';
-import { User } from '../entities/user/user.entity';
+import { User, UserRoles } from '@entities';
 import { UserService } from './user.service';
 import { UserResetPasswordDto } from './dto/user-reset-password.dto';
 import { UserForgotPasswordDto } from './dto/user-forgot-password.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { HasRoleGuard } from '@guards';
+import { RequiredRoles } from '@decorators';
+
+import { GetCurrentUser } from '@decorators';
 
 @ApiTags('Users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,28 +33,33 @@ export class UserController {
   ) { }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Users fetched successfully' })
+  @ApiResponse({ status: 200, description: 'Users fetched successfully', type: User, isArray: true })
   @ApiResponse({ status: 401, description: 'Invalid authorization token' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  @UseGuards(JwtAuthGuard)
+  @RequiredRoles([UserRoles.ADMIN, UserRoles.SUPER_ADMIN])
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
   @Get('')
-  async getAllUsers(): Promise<User[]> {
-    return this.userService.getAllUsers();
+  async getAllUsers(
+    @GetCurrentUser() user: User,
+  ): Promise<User[]> {
+    return this.userService.getAllUsers(user.role);
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 201, description: 'New user created successfully' })
+  @ApiResponse({ status: 201, description: 'New user created successfully', type: User })
   @ApiResponse({ status: 400, description: 'Error with user payload' })
   @ApiResponse({ status: 401, description: 'Invalid authorization token' })
-  @UseGuards(JwtAuthGuard)
+  @RequiredRoles([UserRoles.ADMIN, UserRoles.SUPER_ADMIN])
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
   @Post('')
   async createUser(
+    @GetCurrentUser() user: User,
     @Body(ValidationPipe) userCreationPayload: UserCreationDto
   ): Promise<User> {
-    return this.userService.createUser(userCreationPayload);
+    return this.userService.createUser(userCreationPayload, user);
   }
 
-  @ApiResponse({ status: 200, description: 'Password reset successful' })
+  @ApiResponse({ status: 200, description: 'Password reset successful', type: User })
   @ApiResponse({ status: 400, description: 'Password reset payload error' })
   @ApiResponse({ status: 401, description: 'Invalid password reset token' })
   @ApiBody({ type: UserResetPasswordDto })
@@ -72,7 +81,7 @@ export class UserController {
     return this.userService.sendResetPasswordEmail(userForgotPasswordPayload.email);
   }
 
-  @ApiResponse({ status: 200, description: 'Password reset successful' })
+  @ApiResponse({ status: 200, description: 'Password reset successful', type: User })
   @ApiResponse({ status: 400, description: 'Password reset payload error' })
   @ApiResponse({ status: 401, description: 'Invalid password reset token' })
   @ApiBody({ type: UserResetPasswordDto })
@@ -84,7 +93,7 @@ export class UserController {
     return this.userService.resetUserPassword(token, userResetPasswordPayload);
   }
 
-  @ApiResponse({ status: 201, description: 'New user created successfully' })
+  @ApiResponse({ status: 201, description: 'New user created successfully', type: UserSignupDto })
   @ApiResponse({ status: 400, description: 'Error with user payload' })
   @Post('signup')
   async signup(

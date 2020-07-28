@@ -1,22 +1,18 @@
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
+import { Entity, Column, Unique, Index, ManyToOne } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 import { Exclude } from 'class-transformer';
+import { Role, S3BaseEntity } from '@entities';
 
 import environment from '@environment';
 
 import * as bcrypt from 'bcrypt';
 
-import { ApiProperty } from '@nestjs/swagger';
-
 @Index(['email', 'sessionSalt'])
 @Unique(['email'])
 @Entity()
-export class User extends BaseEntity {
-  @ApiProperty()
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class User extends S3BaseEntity {
   @Index()
   @ApiProperty()
   @Column({nullable: false})
@@ -35,6 +31,10 @@ export class User extends BaseEntity {
   temporaryTokenHash: string;
 
   @ApiProperty()
+  @Column({nullable: true})
+  activatedAt: Date;
+
+  @ApiProperty()
   @Column({nullable: false})
   firstName: string;
 
@@ -47,8 +47,8 @@ export class User extends BaseEntity {
   profilePicture: string;
 
   @ApiProperty()
-  @Column({nullable: true})
-  activatedAt: Date;
+  @ManyToOne('Role', { eager: true, nullable: false })
+  role: Role;
 
   public getFullName(): string {
     return `${this.firstName} ${this.lastName}`;
@@ -63,7 +63,7 @@ export class User extends BaseEntity {
     return passwordHash;
   }
 
-  public async sendWelcomeEmail(): Promise<void> {
+  public async sendWelcomeEmail(): Promise<User> {
     const emailUtility: EmailUtility = new EmailUtility(),
       jwtUtility: JwtUtility = new JwtUtility(),
       tokenHash: string = await bcrypt.genSalt(10);
@@ -77,11 +77,9 @@ export class User extends BaseEntity {
 
     this.temporaryTokenHash = tokenHash;
 
-    await this.save();
-
     const resetToken: string = jwtUtility.sign({ id: this.id, email: this.email });
 
-    await emailUtility.sendSingleEmail({
+    emailUtility.sendSingleEmail({
       subject: `Welcome to ${environment.application_name}!`,
       to: this.email,
       template: 'user-welcome',
@@ -91,5 +89,7 @@ export class User extends BaseEntity {
         user: this.getFullName()
       }
     });
+
+    return this.save();
   }
 }

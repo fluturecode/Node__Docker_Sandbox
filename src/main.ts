@@ -5,13 +5,12 @@ import { Logger, INestApplication } from '@nestjs/common';
 import { CorsUtility } from '@utilities/security/cors.utility';
 import { DatabaseUtility } from '@utilities/database';
 import { EventLogger } from '@utilities/logging/event-logger.utility';
+import { EventLoggerInterceptor } from './interceptors/event-logger.interceptor';
 import { SwaggerUtility } from '@utilities/swagger';
 
 import environment from '@environment';
 
 import * as sentry from '@sentry/node';
-import { EventLoggerInterceptor } from './interceptors/event-logger.interceptor';
-import { Request, Response, NextFunction } from 'express';
 
 class BoilerplateServer {
   app: INestApplication;
@@ -27,6 +26,8 @@ class BoilerplateServer {
     sentry.init({ dsn: environment.sentry_dsn });
 
     await this.databaseUtility.checkForMigrations();
+
+    await this.databaseUtility.seedDatabase();
 
     this.app.enableCors(new CorsUtility().returnCorsConfig());
 

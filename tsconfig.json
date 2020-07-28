@@ -12,8 +12,11 @@
     "incremental": true,
     "paths": {
       "@consts/*": ["src/consts/*"],
-      "@entities/*": ["src/entities/*"],
+      "@decorators": ["src/common/decorators/index"],
+      "@entities": ["src/entities/index"],
       "@environment": ["src/environment"],
+      "@guards": ["src/common/guards/index"],
+      "@seeds/*": ["src/seeds/*"],
       "@utilities/*": ["src/utilities/*"]
     }
   },

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { ensureFullPath, scrubData } from './logging.helper';
 
-import { User } from '@entities/user/user.entity';
+import { User } from '@entities';
 
 import environment from '@environment';
 

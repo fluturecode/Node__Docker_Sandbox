@@ -6,7 +6,7 @@ import { AuthService } from '../auth.service';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
-import { User } from '@entities/user/user.entity';
+import { User } from '@entities';
 import { Request } from 'express';
 import { JwtSecretRequestType } from '@nestjs/jwt';
 
@@ -41,7 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(req: Request, payload: JwtPayload) {
     const user: User = await this.authService.findUserFromJwtPayload(payload);
 
-    if (!user) {
+    if (!user || !user.activatedAt) {
       throw new UnauthorizedException('Invalid or expired auth token');
     }
 

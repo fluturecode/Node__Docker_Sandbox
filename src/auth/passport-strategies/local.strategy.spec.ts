@@ -5,8 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '../auth.service';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
-import { UserRepository } from '@entities/user/user.respository';
-import { User } from '@entities/user/user.entity';
+import { User, UserRepository } from '@entities';
 
 interface UserCredentials {
   email: string;

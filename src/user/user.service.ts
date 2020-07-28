@@ -1,25 +1,30 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { User } from '@entities/user/user.entity';
-import { UserRepository } from '@entities/user/user.respository';
+import { User, UserRepository, RoleRepository, Role, UserRoles } from '@entities';
 
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { UserCreationDto } from './dto/user-creation.dto';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UserResetPasswordDto } from './dto/user-reset-password.dto';
 
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
-import { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
+import { ErrorLogger } from '@utilities/logging/error-logger.utility';
+
+import * as _ from 'lodash';
 
 @Injectable()
 export class UserService {
   emailUtility: EmailUtility = new EmailUtility();
+  errorLogger: ErrorLogger = new ErrorLogger('UserService');
   jwtUtility: JwtUtility = new JwtUtility();
 
   constructor(
     @InjectRepository(UserRepository)
-    private userRepository: UserRepository
+    private userRepository: UserRepository,
+    @InjectRepository(RoleRepository)
+    private roleRepository: RoleRepository
   ) {}
 
   public async activateUserAccount(token: string, passwordPayload: UserResetPasswordDto): Promise<User> {
@@ -34,18 +39,35 @@ export class UserService {
     return this.userRepository.setPassword(user, passwordPayload.newPassword);
   }
 
-  public async createUser(userData: UserCreationDto): Promise<User> {
-    const newUser: User = await this.userRepository.createUser(userData);
+  public async createUser(createDto: UserCreationDto, currentUser: User): Promise<User> {
+    const userRole: Role = await this.roleRepository.findRoleById(createDto.roleId);
 
-    newUser.sendWelcomeEmail();
+    if (!userRole) {
+      this.errorLogger.log({
+        level: 'info',
+        message: `Unable to find User role with ID ${createDto.roleId}. Cannot create user with email: ${createDto.email}`
+      });
 
-    return newUser;
+      throw new BadRequestException(`Invalid user role: ${createDto.roleId}`);
+    }
+
+    const currentUserRole: UserRoles = _.get(currentUser, 'role.roleName'),
+      canAccessRole: boolean = userRole.canAccessRole(currentUserRole, userRole.roleName);
+
+    if (!canAccessRole) {
+      this.errorLogger.log({
+        level: 'info',
+        message: `User with role: ${currentUserRole} attempted to create a user with role: ${userRole.roleName} but was denied access.`
+      });
+
+      throw new ForbiddenException('Access to resource denied');
+    }
+
+    return this.userRepository.createUser(createDto, userRole);
   }
 
-  public async getAllUsers(): Promise<Partial<User[]>> {
-    const users: Partial<User[]> = await this.userRepository.findAllUsers();
-
-    return users;
+  public async getAllUsers(userRole: Role): Promise<User[]> {
+    return this.userRepository.findAllUsers(userRole);
   }
 
   public async resetUserPassword(token: string, passwordPayload: UserResetPasswordDto): Promise<User> {
@@ -69,11 +91,18 @@ export class UserService {
   }
 
   public async signUp(signupDto: UserSignupDto): Promise<User> {
-    const newUser: User = await this.userRepository.createUser(signupDto);
+    const userRole: Role = await this.roleRepository.findRoleByName(UserRoles.USER);
 
-    await this.userRepository.setPassword(newUser, signupDto.password);
+    if (!userRole) {
+      this.errorLogger.log({
+        level: 'info',
+        message: `Unable to find User role ${UserRoles.USER}. Cannot signup user with email: ${signupDto.email}`
+      });
 
-    return newUser;
+      throw new BadRequestException('Unable to signup user.');
+    }
+
+    return this.userRepository.createUser(signupDto, userRole);
   }
 
   private async findUserFromToken(token: string): Promise<User> {

@@ -1,11 +1,13 @@
 import { createConnection, Connection, getConnection } from 'typeorm';
 import { typeOrmConfig } from './typeorm.config';
-
 import { Logger } from '@nestjs/common';
+import { DatabaseSeeder } from '@seeds/index';
+
 import environment from 'src/environment';
 
 export class DatabaseUtility {
   databaseConnection: Connection;
+  databaseSeeder: DatabaseSeeder = new DatabaseSeeder();
 
   constructor() {}
 
@@ -31,7 +33,11 @@ export class DatabaseUtility {
 
       Logger.log('Migrations complete!', 'DatabaseUtility');
     } else {
-      Logger.log('Database up to date, no migrations required.', 'DatabaseUtility')
+      Logger.log('Database up to date, no migrations required.', 'DatabaseUtility');
     }
+  }
+
+  async seedDatabase(): Promise<void> {
+    await this.databaseSeeder.runAllSeeders();
   }
 }

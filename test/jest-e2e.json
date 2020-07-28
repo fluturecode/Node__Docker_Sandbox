@@ -3,8 +3,11 @@
   "rootDir": ".",
   "moduleNameMapper": {
     "@consts/(.*)": "<rootDir>/../src/consts/$1",
-    "@entities/(.*)": "<rootDir>/../src/entities/$1",
+    "@decorators": ["<rootDir>/../src/common/decorators/index"],
+    "@entities": "<rootDir>/../src/entities/index",
     "@environment": ["<rootDir>/../src/environment"],
+    "@guards": "<rootDir>/../src/common/guards/index",
+    "@seeds": ["<rootDir>/../src/seeds/$1"],
     "@utilities/(.*)": ["<rootDir>/../src/utilities/$1"]
   },
   "testEnvironment": "node",

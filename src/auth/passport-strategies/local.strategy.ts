@@ -2,17 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { AuthService } from '../auth.service';
-
-interface JwtResponse {
-  jwt_token: string;
-  user: Partial<User>;
-}
-
-interface User {
-  id: number;
-  email: string;
-  password: string;
-}
+import { JwtResponseDto } from '../dto/jwt-response.dto';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -24,7 +14,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(email: string, password: string): Promise<JwtResponse> {
+  async validate(email: string, password: string): Promise<JwtResponseDto> {
     return this.authService.signIn(email, password);
   }
 }

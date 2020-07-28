@@ -6,8 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './passport-strategies/jwt.strategy';
 import { LocalStrategy } from './passport-strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserRepository } from '@entities/user/user.respository';
-import { ErrorLogger } from '@utilities/logging/error-logger.utility';
+import { UserRepository } from '@entities';
 
 @Module({
   imports: [

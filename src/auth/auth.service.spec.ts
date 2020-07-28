@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from '../entities/user/user.respository';
+import { UserRepository } from '@entities';
 
 const mockJwtService = () => ({}),
   mockUserRespository = () => ({});

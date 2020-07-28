@@ -1,6 +1,6 @@
 {
   "name": "boilerplate-server-node",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Shift3 nodejs boilerplate",
   "private": true,
   "repository": {
@@ -22,9 +22,9 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "db:migrate": "ts-node node_modules/.bin/typeorm migration:run",
-    "db:new-migration": "ts-node node_modules/.bin/typeorm migration:generate",
-    "db:revert-migration": "ts-node node_modules/.bin/typeorm migration:revert",
+    "db:migrate": "ts-node -r tsconfig-paths/register node_modules/.bin/typeorm migration:run",
+    "db:new-migration": "ts-node -r tsconfig-paths/register node_modules/.bin/typeorm migration:generate",
+    "db:revert-migration": "ts-node -r tsconfig-paths/register node_modules/.bin/typeorm migration:revert",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -99,8 +99,11 @@
     "rootDir": "src",
     "moduleNameMapper": {
       "@consts/(.*)": "<rootDir>/consts/$1",
-      "@entities/(.*)": "<rootDir>/entities/$1",
+      "@decorators": "<rootDir>/common/decorators/index",
+      "@entities": "<rootDir>/entities/index",
       "@environment": "<rootDir>/environment",
+      "@guards": "<rootDir>/common/guards/index",
+      "@seeds": "<rootDir>/seeds/$1",
       "@utilities/(.*)": "<rootDir>/utilities/$1"
     },
     "testRegex": ".spec.ts$",

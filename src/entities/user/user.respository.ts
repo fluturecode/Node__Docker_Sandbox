@@ -1,33 +1,42 @@
 import * as bcrypt from 'bcrypt';
-import { EntityRepository, Repository, IsNull, Not } from 'typeorm';
+import { EntityRepository, Repository, IsNull, Not, In } from 'typeorm';
 import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
-import { User } from './user.entity';
-import { UserCreationDto } from 'src/user/dto/user-creation.dto';
+import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
+import { Role, User } from '@entities';
+import { UserCreationDto } from '../../user/dto/user-creation.dto';
 import { UserSignupDto } from '../../user/dto/user-signup.dto';
 
 import environment from '@environment';
-import { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   emailUtility: EmailUtility = new EmailUtility();
 
-  public async createUser(userData: UserSignupDto | UserCreationDto): Promise<User> {
-    const duplicateUser: User = await this.findUserByEmail(userData.email);
+  public async createUser(userData: UserSignupDto | UserCreationDto, role: Role): Promise<User> {
+    await this.checkForDuplicateUserByEmail(userData.email);
+
+    Object.assign(
+      userData,
+      { role }
+    );
+
+    const newUser: User = await this.create(userData).save();
+
+    await newUser.sendWelcomeEmail();
+
+    return newUser;
+  }
+
+  public async checkForDuplicateUserByEmail(email: string): Promise<void> {
+    const duplicateUser: User = await this.findUserByEmail(email);
 
     if (duplicateUser) {
-      throw new BadRequestException(`A user with email: ${userData.email} already exists.`);
+      throw new BadRequestException(`A user with email: ${email} already exists.`);
     }
-
-    const newUser: User = this.create();
-
-    Object.assign(newUser, userData);
-
-    return newUser.save();
   }
 
   public async comparePassword(password: string, userPassword: string): Promise<boolean> {
@@ -46,12 +55,16 @@ export class UserRepository extends Repository<User> {
     return await user.save();
   }
 
-  public findAllUsers(): Promise<User[]> {
-    return this.find(
-      {
-        order: { 'id': 'DESC' }
-      }
-    );
+  public findAllUsers(userRole: Role): Promise<User[]> {
+    return this.createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .where('role.id = user.role')
+      .andWhere('role.roleName IN (:...roleNames)', { roleNames: userRole.allowedUserRoles })
+      .orderBy({
+        'user.lastName': 'ASC',
+        'user.id': 'DESC'
+      })
+      .getMany();
   }
 
   public async findUserByJwtPayload(jwtPayload: JwtPayload): Promise<User> {
