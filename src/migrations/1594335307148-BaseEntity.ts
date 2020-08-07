@@ -1,7 +1,7 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class BaseEntity1594335307148 implements MigrationInterface {
-    name = 'BaseEntity1594335307148'
+    name = 'BaseEntity1594335307148';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "user" ADD "createdAt" TIMESTAMP NOT NULL DEFAULT now()`);
