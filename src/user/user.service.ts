@@ -1,16 +1,18 @@
 import { Injectable, BadRequestException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { User, UserRepository, RoleRepository, Role, UserRoles } from '@entities';
-
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
-import { UserCreationDto } from './dto/user-creation.dto';
-import { UserSignupDto } from './dto/user-signup.dto';
-import { UserResetPasswordDto } from './dto/user-reset-password.dto';
-
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 import { ErrorLogger } from '@utilities/logging/error-logger.utility';
+import { DatabaseErrorCodes } from '@consts/error-codes.consts';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+
+import {
+  UserCreationDto,
+  UserResetPasswordDto,
+  UserSignupDto,
+  UserUpdateDto
+} from './dto';
 
 import * as _ from 'lodash';
 
@@ -51,8 +53,8 @@ export class UserService {
       throw new BadRequestException(`Invalid user role: ${createDto.roleId}`);
     }
 
-    const currentUserRole: UserRoles = _.get(currentUser, 'role.roleName'),
-      canAccessRole: boolean = userRole.canAccessRole(currentUserRole, userRole.roleName);
+    const currentUserRole: UserRoles = currentUser.role.roleName,
+      canAccessRole: boolean = userRole.canAccessRole(userRole.roleName);
 
     if (!canAccessRole) {
       this.errorLogger.log({
@@ -103,6 +105,95 @@ export class UserService {
     }
 
     return this.userRepository.createUser(signupDto, userRole);
+  }
+
+  public async softDeleteUser(currentUser: User, userId: number): Promise<User> {
+    if (currentUser.id === userId) {
+      throw new ForbiddenException('Cannot delete your own user.');
+    }
+
+    const userToDelete: User = await this.findUserAndDetermineAccess(currentUser, userId);
+
+    userToDelete.softDelete(currentUser.id);
+
+    const deletedUser: User = await userToDelete.save();
+
+    this.errorLogger.log({
+      level: 'info',
+      message: `User | ID: ${userId}, Name: ${userToDelete.getFullName()} | was soft deleted by User | ID: ${currentUser.id} Name: ${currentUser.getFullName()}`
+    });
+
+    return deletedUser;
+  }
+
+  public async updateSingleUser(currentUser: User, userId: number, userData: UserUpdateDto): Promise<User> {
+    const userToUpdate: User = await this.findUserAndDetermineAccess(currentUser, userId);
+
+    if (currentUser.id === userId) {
+      delete userData.role;
+    }
+
+    if (userData.role) {
+      const newUserRole: Role = await this.roleRepository.findRoleById(_.get(userData, 'role.id'));
+
+      if (!newUserRole) {
+        this.errorLogger.log({
+          level: 'info',
+          message: `User - ID: ${currentUser.id}, Name: ${currentUser.getFullName()} attempted to update user | ID: ${userId}, Name: ${userToUpdate.getFullName()} | with an invalid role | ${JSON.stringify(_.get(userData, 'role', {}))}`
+        });
+
+        throw new BadRequestException(`Could not update user because of invalid user role with ID: ${_.get(userData, 'role.id')}`);
+      }
+
+      if (!currentUser.role.canAccessRole(newUserRole.roleName)) {
+        this.errorLogger.log({
+          level: 'info',
+          message: `User - ID: ${currentUser.id}, Name: ${currentUser.getFullName()} attempted to update user | ID: ${userId}, Name: ${userToUpdate.getFullName()} | with a role they do not have access to | ${JSON.stringify(_.get(userData, 'role', {}))} |`
+        });
+
+        throw new ForbiddenException(`Current user with role: ${currentUser.role.roleName} update a user to role: ${newUserRole.roleName}`);
+      }
+
+      userData.role = Object.assign({} , { id: newUserRole.id, roleName: newUserRole.roleName });
+    }
+
+    Object.assign(userToUpdate, userData);
+
+    try {
+      const updatedUser: User = await userToUpdate.save();
+
+      return updatedUser;
+    } catch (error) {
+      if (error.code === DatabaseErrorCodes.DuplicateKeyConstraint) {
+        throw new BadRequestException(error.detail);
+      }
+
+      throw error;
+    }
+  }
+
+  private async findUserAndDetermineAccess (currentUser: User, userId: number): Promise<User> {
+    const accessedUser: User = await this.userRepository.findUserById(userId);
+
+    if (!accessedUser) {
+      throw new BadRequestException(`Unable to find user with ID: ${userId}`);
+    }
+
+    //TODO: Possibly convert this to be handled inside the canAccessRole function or the user entity
+    const currentUserRole: UserRoles = currentUser.role.roleName,
+      accessedUserRole: UserRoles = accessedUser.role.roleName,
+      canAccessRole: boolean = currentUser.role.canAccessRole(accessedUserRole);
+
+    if (!canAccessRole) {
+      this.errorLogger.log({
+        level: 'info',
+        message: `User with a role of | ${currentUserRole} | attempted to access a user with a role of | ${accessedUserRole} |`
+      });
+
+      throw new ForbiddenException(`Current user with role: ${currentUserRole} cannot delete a user with role: ${accessedUserRole}`);
+    }
+
+    return accessedUser;
   }
 
   private async findUserFromToken(token: string): Promise<User> {

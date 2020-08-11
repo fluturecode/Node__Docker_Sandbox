@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, INestApplication } from '@nestjs/common';
+import { Logger, INestApplication, ValidationPipe } from '@nestjs/common';
 
 import { CorsUtility } from '@utilities/security/cors.utility';
 import { DatabaseUtility } from '@utilities/database';
@@ -34,6 +34,10 @@ class BoilerplateServer {
     this.swaggerUtility.initializeSwagger(this.app);
 
     this.app.useGlobalInterceptors(new EventLoggerInterceptor());
+    this.app.useGlobalPipes(new ValidationPipe({
+      transform: true,
+      whitelist: true
+    }));
 
     await this.app.listen(environment.port);
 

@@ -1,3 +1,3 @@
-export const DatabaseErrorCodes = {
-  "DuplicateKeyConstraint": "23505"
-};
+export enum DatabaseErrorCodes {
+  DuplicateKeyConstraint = "23505"
+}

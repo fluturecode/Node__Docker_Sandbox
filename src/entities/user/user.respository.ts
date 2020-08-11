@@ -79,6 +79,10 @@ export class UserRepository extends Repository<User> {
     return await this.findOne({ email: email.toString().toLowerCase() });
   }
 
+  public async findUserById(id: number): Promise<User> {
+    return this.findOne({ id });
+  }
+
   public async sendResetPasswordEmail(email: string): Promise<void> {
     const user: User = await this.findUserByEmail(email),
       jwtUtility: JwtUtility = new JwtUtility();

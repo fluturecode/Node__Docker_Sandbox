@@ -11,6 +11,13 @@ export enum UserRoles {
   SUPER_ADMIN = 'Super Administrator'
 }
 
+const RoleHierarchy = {
+  [`${UserRoles.SUPER_ADMIN}`]: 4,
+  [`${UserRoles.ADMIN}`]:       3,
+  [`${UserRoles.EDITOR}`]:      2,
+  [`${UserRoles.USER}`]:        1
+};
+
 @Entity()
 export class Role extends S3BaseEntity {
   @ApiProperty()
@@ -23,7 +30,7 @@ export class Role extends S3BaseEntity {
 
   get allowedUserRoles(): UserRoles[] {
     return _.reduce(UserRoles, (result: UserRoles[], value: UserRoles) => {
-      if (this.canAccessRole(this.roleName, value)) {
+      if (this.canAccessRole(value)) {
         result.push(value);
       }
 
@@ -31,22 +38,15 @@ export class Role extends S3BaseEntity {
     }, []);
   }
 
-  public canAccessRole(userRole: UserRoles, accessedRole: UserRoles): boolean {
-    return this.determineRoleHierarchy(userRole) >= this.determineRoleHierarchy(accessedRole);
-  }
-
-  private determineRoleHierarchy(role: UserRoles): number {
-    switch (role) {
-      case (UserRoles.SUPER_ADMIN):
-        return 4;
-      case (UserRoles.ADMIN):
-        return 3;
-      case (UserRoles.EDITOR):
-        return 2;
-      case (UserRoles.USER):
-        return 1;
-      default:
-        return 0;
+  public canAccessRole(roleName: UserRoles): boolean {
+    if (!roleName) {
+      return false;
     }
+
+    if (roleName in RoleHierarchy) {
+      return RoleHierarchy[this.roleName] >= RoleHierarchy[roleName];
+    }
+
+    return false;
   }
 }

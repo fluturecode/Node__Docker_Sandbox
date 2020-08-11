@@ -91,8 +91,8 @@ module "rds_instance" {
   deletion_protection       = true
   engine                    = "postgres"
   engine_version            = "11.6"
-  final_snapshot_identifier = "boilerplate-server-node"
-  identifier                = "node-boilerplate-sandbox"
+  final_snapshot_identifier = "${var.application_name}-final"
+  identifier                = var.application_name
   instance_class            = "db.t3.micro"
   maintenance_window        = "Sun:06:00-Sun:09:00"
   max_allocated_storage     = "50"

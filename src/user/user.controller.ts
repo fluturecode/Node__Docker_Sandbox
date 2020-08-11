@@ -2,9 +2,11 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   UseGuards,
@@ -12,17 +14,20 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { UserSignupDto } from './dto/user-signup.dto';
-import { UserCreationDto } from './dto/user-creation.dto';
 import { User, UserRoles } from '@entities';
-import { UserService } from './user.service';
-import { UserResetPasswordDto } from './dto/user-reset-password.dto';
-import { UserForgotPasswordDto } from './dto/user-forgot-password.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { HasRoleGuard } from '@guards';
-import { RequiredRoles } from '@decorators';
+import { RequiredRoles, GetCurrentUser } from '@decorators';
 
-import { GetCurrentUser } from '@decorators';
+import { UserService } from './user.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+import {
+  UserCreationDto,
+  UserForgotPasswordDto,
+  UserResetPasswordDto,
+  UserSignupDto,
+  UserUpdateDto
+} from './dto';
 
 @ApiTags('Users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -100,5 +105,34 @@ export class UserController {
     @Body(ValidationPipe) signupPayload: UserSignupDto
   ): Promise<User> {
     return this.userService.signUp(signupPayload);
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'User successfully deleted', type: User })
+  @ApiResponse({ status: 400, description: 'Error with user payload' })
+  @ApiResponse({ status: 401, description: 'Invalid authorization token' })
+  @RequiredRoles([UserRoles.ADMIN, UserRoles.SUPER_ADMIN])
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
+  @Delete(':id')
+  async softDeleteUser(
+    @GetCurrentUser() currentUser: User,
+    @Param('id', ParseIntPipe) userId: number
+  ): Promise<User> {
+    return this.userService.softDeleteUser(currentUser, userId);
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'User successfully updated', type: User })
+  @ApiResponse({ status: 400, description: 'Error with user payload' })
+  @ApiResponse({ status: 401, description: 'Invalid authorization token' })
+  @RequiredRoles([UserRoles.ADMIN, UserRoles.SUPER_ADMIN])
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
+  @Put(':id')
+  async updateSingleUser(
+    @GetCurrentUser() user: User,
+    @Param('id', ParseIntPipe) userId: number,
+    @Body() userData: UserUpdateDto
+  ): Promise<User> {
+    return this.userService.updateSingleUser(user, userId, userData);
   }
 }
