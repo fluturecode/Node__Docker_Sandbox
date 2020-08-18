@@ -85,7 +85,7 @@ export class User extends S3BaseEntity {
       template: 'user-welcome',
       templateVariables: {
         applicationName: environment.application_name,
-        activationUrl: `${environment.client_url}/user/activate-account/${resetToken}`,
+        activationUrl: `${environment.client_url}/auth/activate-account/${resetToken}`,
         user: this.getFullName()
       }
     });

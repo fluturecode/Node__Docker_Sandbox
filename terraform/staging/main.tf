@@ -10,6 +10,7 @@ variable "default_tags" {}
 variable "eb_env_variables" {}
 variable "eb_iam_profile" {}
 variable "eb_service_role" {}
+variable "rds_name" {}
 
 variable "aws_region" {
   default = "us-west-2"
@@ -91,8 +92,8 @@ module "rds_instance" {
   deletion_protection       = true
   engine                    = "postgres"
   engine_version            = "11.6"
-  final_snapshot_identifier = "${var.application_name}-final"
-  identifier                = var.application_name
+  final_snapshot_identifier = "${var.rds_name}-final"
+  identifier                = var.rds_name
   instance_class            = "db.t3.micro"
   maintenance_window        = "Sun:06:00-Sun:09:00"
   max_allocated_storage     = "50"

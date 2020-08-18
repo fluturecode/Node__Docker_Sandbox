@@ -1,6 +1,6 @@
 {
   "name": "boilerplate-server-node",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Shift3 nodejs boilerplate",
   "private": true,
   "repository": {
