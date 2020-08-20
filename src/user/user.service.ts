@@ -42,15 +42,15 @@ export class UserService {
   }
 
   public async createUser(createDto: UserCreationDto, currentUser: User): Promise<User> {
-    const userRole: Role = await this.roleRepository.findRoleById(createDto.roleId);
+    const userRole: Role = await this.roleRepository.findRoleById(createDto.role.id);
 
     if (!userRole) {
       this.errorLogger.log({
         level: 'info',
-        message: `Unable to find User role with ID ${createDto.roleId}. Cannot create user with email: ${createDto.email}`
+        message: `Unable to find User role with ID ${createDto.role.id}. Cannot create user with email: ${createDto.email}`
       });
 
-      throw new BadRequestException(`Invalid user role: ${createDto.roleId}`);
+      throw new BadRequestException(`Invalid user role: ${createDto.role.id}`);
     }
 
     const currentUserRole: UserRoles = currentUser.role.roleName,

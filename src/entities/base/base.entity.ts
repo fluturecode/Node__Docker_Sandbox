@@ -7,13 +7,14 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 export class S3BaseEntity extends BaseEntity {
   @ApiProperty()
   @PrimaryGeneratedColumn()
   readonly id: number;
 
-  @ApiProperty()
+  @Exclude({ toPlainOnly: true })
   @CreateDateColumn()
   createdAt: Date;
 
@@ -29,7 +30,7 @@ export class S3BaseEntity extends BaseEntity {
   @ManyToOne('User')
   deletedBy: Number;
 
-  @ApiProperty()
+  @Exclude({ toPlainOnly: true })
   @UpdateDateColumn()
   updatedAt: Date;
 

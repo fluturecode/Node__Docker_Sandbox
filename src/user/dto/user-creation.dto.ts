@@ -1,5 +1,6 @@
 import { IsString, IsEmail, IsNotEmpty, IsNumber } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { Role } from "@entities";
 
 export class UserCreationDto {
   @ApiProperty()
@@ -24,6 +25,5 @@ export class UserCreationDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  roleId: number;
+  role: Partial<Role>;
 }

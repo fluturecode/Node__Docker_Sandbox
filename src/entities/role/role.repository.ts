@@ -10,4 +10,8 @@ export class RoleRepository extends Repository<Role> {
   public findRoleByName(roleName: UserRoles): Promise<Role> {
     return this.findOne({ roleName });
   }
+
+  public findRolesByRoleNames(roleNames: UserRoles[]): Promise<Role[]> {
+    return this.find({ roleName: In(roleNames) });
+  }
 }
