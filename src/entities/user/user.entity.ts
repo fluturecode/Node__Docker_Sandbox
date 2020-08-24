@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 import { Exclude } from 'class-transformer';
-import { Role, S3BaseEntity } from '@entities';
+import { Agency, Role, S3BaseEntity } from '@entities';
 
 import environment from '@environment';
 
@@ -45,6 +45,10 @@ export class User extends S3BaseEntity {
   @ApiProperty()
   @Column({nullable: true})
   profilePicture: string;
+
+  @ApiProperty()
+  @ManyToOne('Agency', { eager: true, nullable: false })
+  agency: Agency;
 
   @ApiProperty()
   @ManyToOne('Role', { eager: true, nullable: false })

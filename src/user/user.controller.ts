@@ -47,7 +47,7 @@ export class UserController {
   async getAllUsers(
     @GetCurrentUser() user: User,
   ): Promise<User[]> {
-    return this.userService.getAllUsers(user.role);
+    return this.userService.getAllUsers(user);
   }
 
   @ApiBearerAuth()

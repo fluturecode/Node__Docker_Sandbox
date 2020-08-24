@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { UserRoleSeeder } from '@seeds/user-roles.seed';
+import { AgencySeeder } from '@seeds/agency.seed';
 
 interface DatabaseSeed {
   order: number;
@@ -11,19 +12,25 @@ export class DatabaseSeeder {
     {
       order: 1,
       classConstructor: UserRoleSeeder
+    },
+    {
+      order: 2,
+      classConstructor: AgencySeeder
     }
   ];
 
   constructor() {}
 
   public async runAllSeeders(): Promise<void> {
-    this.seeds.sort((a, b) => a.order - b.order).forEach(async seed => {
-      const seeder = new seed.classConstructor();
+    await this.seeds.sort((a, b) => a.order - b.order).reduce(async (promise: Promise<any>, seed: DatabaseSeed) => {
+      return promise.then(() => {
+        const seeder = new seed.classConstructor();
 
-      if (seeder.seed) {
-        await seeder.seed();
-      }
-    });
+        if (seeder.seed) {
+          return seeder.seed();
+        }
+      });
+    }, Promise.resolve());
 
     Logger.log('Database fully seeded!', 'DatabaseSeeder');
   }

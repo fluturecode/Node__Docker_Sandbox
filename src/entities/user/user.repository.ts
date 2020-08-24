@@ -1,16 +1,17 @@
-import * as bcrypt from 'bcrypt';
-import { EntityRepository, Repository, IsNull, Not, In } from 'typeorm';
+import { EntityRepository, Repository, IsNull, Not } from 'typeorm';
 import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
-import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
 import { Role, User } from '@entities';
+import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
 import { UserCreationDto } from '../../user/dto/user-creation.dto';
 import { UserSignupDto } from '../../user/dto/user-signup.dto';
 
 import environment from '@environment';
+
+import * as bcrypt from 'bcrypt';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -55,11 +56,14 @@ export class UserRepository extends Repository<User> {
     return await user.save();
   }
 
-  public findAllUsers(userRole: Role): Promise<User[]> {
+  public findAllUsers(currentUser: User): Promise<User[]> {
     return this.createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
       .where('role.id = user.role')
-      .andWhere('role.roleName IN (:...roleNames)', { roleNames: userRole.allowedUserRoles })
+      .leftJoinAndSelect('user.agency', 'agency')
+      .where('agency.id = user.agency')
+      .andWhere('role.roleName IN (:...roleNames)', { roleNames: currentUser.role.allowedUserRoles })
+      .andWhere('agency.id = :agencyId', { agencyId: currentUser.agency.id })
       .orderBy({
         'user.lastName': 'ASC',
         'user.id': 'DESC'
@@ -79,8 +83,8 @@ export class UserRepository extends Repository<User> {
     return await this.findOne({ email: email.toString().toLowerCase() });
   }
 
-  public async findUserById(id: number): Promise<User> {
-    return this.findOne({ id });
+  public async findUserById(id: number, currentUser: User): Promise<User> {
+    return this.findOne({ id, agency: currentUser.agency });
   }
 
   public async sendResetPasswordEmail(email: string): Promise<void> {

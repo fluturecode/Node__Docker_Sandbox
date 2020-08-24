@@ -68,8 +68,8 @@ export class UserService {
     return this.userRepository.createUser(createDto, userRole);
   }
 
-  public async getAllUsers(userRole: Role): Promise<User[]> {
-    return this.userRepository.findAllUsers(userRole);
+  public async getAllUsers(currentUser: User): Promise<User[]> {
+    return this.userRepository.findAllUsers(currentUser);
   }
 
   public async resetUserPassword(token: string, passwordPayload: UserResetPasswordDto): Promise<User> {
@@ -173,7 +173,7 @@ export class UserService {
   }
 
   private async findUserAndDetermineAccess (currentUser: User, userId: number): Promise<User> {
-    const accessedUser: User = await this.userRepository.findUserById(userId);
+    const accessedUser: User = await this.userRepository.findUserById(userId, currentUser);
 
     if (!accessedUser) {
       throw new BadRequestException(`Unable to find user with ID: ${userId}`);
