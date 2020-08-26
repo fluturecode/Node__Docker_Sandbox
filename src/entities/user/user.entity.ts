@@ -46,12 +46,12 @@ export class User extends S3BaseEntity {
   @Column({nullable: true})
   profilePicture: string;
 
-  @ApiProperty()
-  @ManyToOne('Agency', { eager: true, nullable: false })
+  @ApiProperty({ type: () => Agency })
+  @ManyToOne(type => Agency, { eager: true, nullable: false })
   agency: Agency;
 
-  @ApiProperty()
-  @ManyToOne('Role', { eager: true, nullable: false })
+  @ApiProperty({ type: () => Role })
+  @ManyToOne(type => Role, { eager: true, nullable: false })
   role: Role;
 
   public getFullName(): string {

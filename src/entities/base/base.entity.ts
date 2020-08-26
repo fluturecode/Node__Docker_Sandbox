@@ -8,6 +8,7 @@ import {
   UpdateDateColumn
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { User } from '@entities';
 
 export class S3BaseEntity extends BaseEntity {
   @ApiProperty()
@@ -19,7 +20,7 @@ export class S3BaseEntity extends BaseEntity {
   createdAt: Date;
 
   @ApiProperty()
-  @ManyToOne('User')
+  @ManyToOne(type => User)
   createdBy: Number;
 
   @ApiProperty()
@@ -27,7 +28,7 @@ export class S3BaseEntity extends BaseEntity {
   deletedAt: Date;
 
   @ApiProperty()
-  @ManyToOne('User')
+  @ManyToOne(type => User)
   deletedBy: Number;
 
   @Exclude({ toPlainOnly: true })

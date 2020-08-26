@@ -9,13 +9,15 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SentryInterceptor } from './interceptors/sentry.interceptor';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
+import { AgentModule } from './agent/agent.module';
 
 @Module({
   imports: [
     AuthModule,
     TypeOrmModule.forRoot(typeOrmConfig),
     UserModule,
-    RoleModule
+    RoleModule,
+    AgentModule
   ],
   controllers: [AppController],
   providers: [
