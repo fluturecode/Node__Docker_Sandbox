@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserRepository, RoleRepository, Role, UserRoles } from '@entities';
 import { EmailUtility } from '@utilities/email/email.utility';
@@ -68,8 +68,34 @@ export class UserService {
     return this.userRepository.createUser(createDto, userRole);
   }
 
+  public async findSingleUser(userId: number, currentUser: User): Promise<User> {
+    const user: User = await this.userRepository.findUserById(userId, currentUser);
+
+    if (!user) {
+      throw new NotFoundException(`Cannot find user with id: ${userId}`);
+    }
+
+    return user;
+  }
+
   public async getAllUsers(currentUser: User): Promise<User[]> {
     return this.userRepository.findAllUsers(currentUser);
+  }
+
+  public async resendActivationEmail(userId: number, currentUser: User): Promise<User> {
+    const user: User = await this.findSingleUser(userId, currentUser);
+
+    if (user.activatedAt) {
+      throw new BadRequestException(`User has already been activated.`);
+    }
+
+    if (!currentUser.role.canAccessRole(user.role.roleName)) {
+      throw new ForbiddenException(`Current user with role: ${currentUser.role.roleName} cannot activate a user with role: ${user.role.roleName}`);
+    }
+
+    await user.sendWelcomeEmail();
+
+    return user;
   }
 
   public async resetUserPassword(token: string, passwordPayload: UserResetPasswordDto): Promise<User> {
@@ -151,7 +177,7 @@ export class UserService {
           message: `User - ID: ${currentUser.id}, Name: ${currentUser.getFullName()} attempted to update user | ID: ${userId}, Name: ${userToUpdate.getFullName()} | with a role they do not have access to | ${JSON.stringify(_.get(userData, 'role', {}))} |`
         });
 
-        throw new ForbiddenException(`Current user with role: ${currentUser.role.roleName} update a user to role: ${newUserRole.roleName}`);
+        throw new ForbiddenException(`Current user with role: ${currentUser.role.roleName} cannot update a user to role: ${newUserRole.roleName}`);
       }
 
       userData.role = Object.assign({} , { id: newUserRole.id, roleName: newUserRole.roleName });

@@ -86,6 +86,22 @@ export class UserController {
     return this.userService.sendResetPasswordEmail(userForgotPasswordPayload.email);
   }
 
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Activation email sent successfully', type: User })
+  @ApiResponse({ status: 400, description: 'Payload error' })
+  @ApiResponse({ status: 401, description: 'Invalid or missing Auth token' })
+  @ApiResponse({ status: 403, description: 'Cannot send activation email to forbidden user' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @RequiredRoles([UserRoles.ADMIN, UserRoles.SUPER_ADMIN])
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
+  @Get('resend-activation-email/:id')
+  async resendActivationEmail(
+    @Param('id', ParseIntPipe) id: number,
+    @GetCurrentUser() user: User
+  ): Promise<User> {
+    return this.userService.resendActivationEmail(id, user);
+  }
+
   @ApiResponse({ status: 200, description: 'Password reset successful', type: User })
   @ApiResponse({ status: 400, description: 'Password reset payload error' })
   @ApiResponse({ status: 401, description: 'Invalid password reset token' })
