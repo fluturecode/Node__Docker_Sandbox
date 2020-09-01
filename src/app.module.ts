@@ -10,6 +10,7 @@ import { SentryInterceptor } from './interceptors/sentry.interceptor';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { AgentModule } from './agent/agent.module';
+import { AgencyModule } from './agency/agency.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { AgentModule } from './agent/agent.module';
     TypeOrmModule.forRoot(typeOrmConfig),
     UserModule,
     RoleModule,
-    AgentModule
+    AgentModule,
+    AgencyModule
   ],
   controllers: [AppController],
   providers: [
