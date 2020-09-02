@@ -73,7 +73,7 @@ export class AuthService {
       });
 
       return new JwtResponseDto({
-        jwt_token: await this.jwtUtility.sign({
+        jwtToken: await this.jwtUtility.sign({
           id: loggedInUser.id,
           email: loggedInUser.email
         }),

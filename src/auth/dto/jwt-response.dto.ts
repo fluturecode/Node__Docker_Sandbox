@@ -6,7 +6,7 @@ import { IsString } from 'class-validator';
 export class JwtResponseDto {
   @ApiProperty()
   @IsString()
-  jwt_token: string;
+  jwtToken: string;
 
   @ApiProperty()
   user: User;

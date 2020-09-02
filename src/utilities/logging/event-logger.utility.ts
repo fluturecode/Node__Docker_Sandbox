@@ -12,7 +12,7 @@ import * as morgan from 'morgan';
 
 export class EventLogger {
   private defaultFormat: string = ':date - Method: :method Url: :url HTTP/:http-version - Address: :remote-addr - Agent: :user-agent';
-  private keysToScrub: string[] = ['jwt_token', 'password'];
+  private keysToScrub: string[] = ['jwtToken', 'password'];
   private requestEventLogger;
   private responseEventLogger;
 

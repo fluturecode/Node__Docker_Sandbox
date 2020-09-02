@@ -73,7 +73,7 @@ export class ErrorLogger {
 
     this.winstonLogger.log(
       logConfig.level || 'info',
-      scrubData(logConfig.message, ['jwt_token', 'password']),
+      scrubData(logConfig.message, ['jwtToken', 'password']),
       logConfig.error
     );
   }

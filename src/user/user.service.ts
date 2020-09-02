@@ -1,11 +1,10 @@
-import { Injectable, BadRequestException, UnauthorizedException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserRepository, RoleRepository, Role, UserRoles } from '@entities';
-import { EmailUtility } from '@utilities/email/email.utility';
-import { JwtUtility } from '@utilities/jwt/jwt.utility';
-import { ErrorLogger } from '@utilities/logging/error-logger.utility';
-import { DatabaseErrorCodes } from '@consts/error-codes.consts';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
+} from '@nestjs/common';
 
 import {
   UserCreationDto,
@@ -13,6 +12,24 @@ import {
   UserSignupDto,
   UserUpdateDto
 } from './dto';
+
+import {
+  RoleRepository,
+  Role,
+  User,
+  UserRoles,
+  UserRepository
+} from '@entities';
+
+import { InjectRepository } from '@nestjs/typeorm';
+import { EmailUtility } from '@utilities/email/email.utility';
+import { JwtUtility } from '@utilities/jwt/jwt.utility';
+import { ErrorLogger } from '@utilities/logging/error-logger.utility';
+import { DatabaseErrorCodes } from '@consts/error-codes.consts';
+
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { UserChangePasswordDto } from './dto/user-change-password.dto';
+import { JwtResponseDto } from '../auth/dto/jwt-response.dto';
 
 import * as _ from 'lodash';
 
@@ -39,6 +56,58 @@ export class UserService {
     user.activatedAt = new Date();
 
     return this.userRepository.setPassword(user, passwordPayload.newPassword);
+  }
+
+  public async changeUserPassword(
+    userId: number,
+    passwordChangePayload: UserChangePasswordDto,
+    currentUser: User
+  ): Promise<JwtResponseDto> {
+    if (userId !== currentUser.id) {
+      throw new ForbiddenException(`Cannot change another users password`);
+    }
+
+    if (passwordChangePayload.newPassword !== passwordChangePayload.confirmPassword) {
+      throw new BadRequestException(`Passwords do not match`);
+    }
+
+    const user: User = await this.userRepository.findUserById(userId, currentUser);
+
+    if (!user) {
+      await this.userRepository.comparePassword('Abc', 'def');
+
+      throw new NotFoundException(`Cannot find user with id: ${userId}`);
+    }
+
+    const passwordMatches: boolean = await this.userRepository.comparePassword(
+      passwordChangePayload.oldPassword,
+      user.password
+    );
+
+    if (!passwordMatches) {
+      this.errorLogger.log({
+        level: 'info',
+        message: `PasswordChange - Password did not match for user: ${user.getFullName()}`
+      });
+
+      throw new BadRequestException(`Invalid request payload.`);
+    }
+
+    const updatedUser: User = await this.userRepository.setPassword(user, passwordChangePayload.newPassword),
+      loggedInUser: User = await this.userRepository.createSession(updatedUser);
+
+    this.jwtUtility.changeJwtOptions({
+      signOptions: { expiresIn: '1h' },
+      secret: loggedInUser.sessionSalt
+    });
+
+    return new JwtResponseDto({
+      jwtToken: await this.jwtUtility.sign({
+        id: loggedInUser.id,
+        email: loggedInUser.email
+      }),
+      user: loggedInUser
+    });
   }
 
   public async createUser(createDto: UserCreationDto, currentUser: User): Promise<User> {
@@ -75,6 +144,10 @@ export class UserService {
       throw new NotFoundException(`Cannot find user with id: ${userId}`);
     }
 
+    if (!currentUser.role.canAccessRole(user.role.roleName)) {
+      throw new ForbiddenException(`Current user with role: ${currentUser.role.roleName} cannot access user with role: ${user.role.roleName}`);
+    }
+
     return user;
   }
 
@@ -87,10 +160,6 @@ export class UserService {
 
     if (user.activatedAt) {
       throw new BadRequestException(`User has already been activated.`);
-    }
-
-    if (!currentUser.role.canAccessRole(user.role.roleName)) {
-      throw new ForbiddenException(`Current user with role: ${currentUser.role.roleName} cannot activate a user with role: ${user.role.roleName}`);
     }
 
     await user.sendWelcomeEmail();
@@ -205,7 +274,6 @@ export class UserService {
       throw new BadRequestException(`Unable to find user with ID: ${userId}`);
     }
 
-    //TODO: Possibly convert this to be handled inside the canAccessRole function or the user entity
     const currentUserRole: UserRoles = currentUser.role.roleName,
       accessedUserRole: UserRoles = accessedUser.role.roleName,
       canAccessRole: boolean = currentUser.role.canAccessRole(accessedUserRole);
