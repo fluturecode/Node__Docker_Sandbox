@@ -19,7 +19,7 @@ services:
       dockerfile: Dockerfile.dev
     networks:
         - server_network
-    command: nest start --watch
+    command: npm run start:dev
     env_file: ./.env
     depends_on:
       - postgres

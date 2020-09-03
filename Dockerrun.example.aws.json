@@ -1,7 +1,7 @@
 {
   "AWSEBDockerrunVersion": 1,
   "Image": {
-    "Name": "<ecr-repository-link>:v<project-version-number>",
+    "Name": "<ecr-repository-link>/<ecr-repository-name>:v<project-version-number>",
     "Update": "true"
   },
   "Ports": [

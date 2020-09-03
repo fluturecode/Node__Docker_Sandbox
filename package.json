@@ -29,6 +29,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "start:prod-docker": "node /opt/node/app/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -103,6 +104,7 @@
       "@entities": "<rootDir>/entities/index",
       "@environment": "<rootDir>/environment",
       "@guards": "<rootDir>/common/guards/index",
+      "@metadata": "<rootDir>/meta-data",
       "@seeds": "<rootDir>/seeds/$1",
       "@utilities/(.*)": "<rootDir>/utilities/$1"
     },

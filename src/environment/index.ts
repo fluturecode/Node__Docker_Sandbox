@@ -9,6 +9,7 @@ if (process.env.NODE_ENV === 'test') {
 
 export default {
   application_name: process.env.APPLICATION_NAME,
+  application_version: process.env.npm_package_version,
   aws_region: process.env.AWS_REGION,
   client_url: process.env.CLIENT_URL,
   db_host: process.env.DB_HOST,

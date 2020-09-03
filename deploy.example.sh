@@ -1,16 +1,23 @@
 #!/bin/bash
 
+AppVersion=$(sed -n 's/"version": "\(.*\)".*/\1/p' package.json | xargs echo -n);
 EBEnvironment=""
 DockerRepository="";
 Profile="default";
 ProjectName="";
 Region="";
 
-echo What is the next deployment version?;
+ECRDeploymentOutput=$DockerRepository/$ProjectName:v$AppVersion;
 
-read ImageVersion;
+$(sed "s|<ecr-repository-link>/<ecr-repository-name>:v<project-version-number>|$ECRDeploymentOutput|g" Dockerrun.example.aws.json > Dockerrun.aws.json);
 
-echo Building and pushing version $ProjectName:v$ImageVersion to ECR using profile $Profile ...;
+echo Press enter to confirm build version: $AppVersion or Ctrl-C to cancel the build.
+
+read DeploymentConfirm;
+
+echo Building and pushing version $ProjectName:v$AppVersion to ECR using profile $Profile ...;
+
+npm run build;
 
 $(aws ecr get-login --no-include-email --region $Region --profile $Profile);
 

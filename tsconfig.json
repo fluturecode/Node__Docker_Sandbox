@@ -16,6 +16,7 @@
       "@entities": ["src/entities/index"],
       "@environment": ["src/environment"],
       "@guards": ["src/common/guards/index"],
+      "@metadata": ["src/meta-data"],
       "@seeds/*": ["src/seeds/*"],
       "@utilities/*": ["src/utilities/*"]
     }

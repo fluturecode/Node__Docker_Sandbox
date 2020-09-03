@@ -51,9 +51,9 @@ export class UserController {
     private userService: UserService
   ) { }
 
-  @ApiOkResponse({ description: 'Password reset successful', type: User })
-  @ApiBadRequestResponse({ description: 'Password reset payload error' })
-  @ApiUnauthorizedResponse({ description: 'Invalid password reset token' })
+  @ApiOkResponse({ description: 'Account activated successfully', type: User })
+  @ApiBadRequestResponse({ description: 'Invalid account activation payload' })
+  @ApiUnauthorizedResponse({ description: 'Invalid account activation token' })
   @ApiBody({ type: UserResetPasswordDto })
   @Put('activate-account/:token')
   async activateAccount(

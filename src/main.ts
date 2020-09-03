@@ -8,6 +8,7 @@ import { EventLogger } from '@utilities/logging/event-logger.utility';
 import { EventLoggerInterceptor } from './interceptors/event-logger.interceptor';
 import { SwaggerUtility } from '@utilities/swagger';
 
+import appMetaData from '@metadata';
 import environment from '@environment';
 
 import * as sentry from '@sentry/node';
@@ -23,7 +24,20 @@ class BoilerplateServer {
   async bootstrap(): Promise<void> {
     this.app = await NestFactory.create(AppModule);
 
-    sentry.init({ dsn: environment.sentry_dsn });
+    sentry.init(
+      {
+        environment: environment.node_env,
+        dsn: environment.sentry_dsn,
+        release: appMetaData.release,
+        beforeSend: (event: sentry.Event) => {
+          if (environment.node_env !== 'production') {
+            return null;
+          }
+
+          return event;
+        }
+      }
+    );
 
     await this.databaseUtility.checkForMigrations();
 
@@ -41,7 +55,7 @@ class BoilerplateServer {
 
     await this.app.listen(environment.port);
 
-    Logger.log(`Server up and running on port: ${environment.port}`, 'NestApplication');
+    Logger.log(`Server version ${appMetaData.version} up and running on port: ${environment.port}`, 'NestApplication');
   }
 }
 

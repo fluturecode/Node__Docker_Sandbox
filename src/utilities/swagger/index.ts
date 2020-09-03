@@ -1,6 +1,8 @@
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
 
+import appMetaData from '@metadata';
+
 export class SwaggerUtility {
   app: INestApplication;
 
@@ -13,7 +15,7 @@ export class SwaggerUtility {
       .addBearerAuth()
       .setTitle('Node Boilerplate')
       .setDescription('Shift3 Node boilerplate built on Nestjs')
-      .setVersion('0.3.1')
+      .setVersion(appMetaData.version)
       .build();
 
     const swaggerDocument = SwaggerModule.createDocument(this.app, swaggerDocumentBuilder);
