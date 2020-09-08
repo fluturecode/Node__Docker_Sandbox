@@ -4,7 +4,7 @@ import { BadRequestException, InternalServerErrorException } from '@nestjs/commo
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
-import { Role, User } from '@entities';
+import { Agency, Role, User } from '@entities';
 import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
 import { UserCreationDto } from '../../user/dto/user-creation.dto';
 import { UserSignupDto } from '../../user/dto/user-signup.dto';
@@ -17,12 +17,15 @@ import * as bcrypt from 'bcrypt';
 export class UserRepository extends Repository<User> {
   emailUtility: EmailUtility = new EmailUtility();
 
-  public async createUser(userData: UserSignupDto | UserCreationDto, role: Role): Promise<User> {
+  public async createUser(userData: UserSignupDto | UserCreationDto, role: Role, agency: Agency): Promise<User> {
     await this.checkForDuplicateUserByEmail(userData.email);
 
     Object.assign(
       userData,
-      { role }
+      {
+        agency,
+        role
+      }
     );
 
     const newUser: User = await this.create(userData).save();

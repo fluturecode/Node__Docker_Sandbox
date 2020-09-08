@@ -1,6 +1,6 @@
-import { IsString, IsEmail, IsNotEmpty } from "class-validator";
+import { IsString, IsEmail, IsNotEmpty, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { Role } from "@entities";
+import { Agency, Role } from "@entities";
 
 export class UserCreationDto {
   @ApiProperty()
@@ -26,4 +26,9 @@ export class UserCreationDto {
   @ApiProperty()
   @IsNotEmpty()
   role: Partial<Role>;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsOptional()
+  agency: Partial<Agency>;
 }

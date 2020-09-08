@@ -18,7 +18,9 @@ import {
   Role,
   User,
   UserRoles,
-  UserRepository
+  UserRepository,
+  AgencyRepository,
+  Agency
 } from '@entities';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -43,7 +45,9 @@ export class UserService {
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     @InjectRepository(RoleRepository)
-    private roleRepository: RoleRepository
+    private roleRepository: RoleRepository,
+    @InjectRepository(AgencyRepository)
+    private agencyRepository: AgencyRepository
   ) {}
 
   public async activateUserAccount(token: string, passwordPayload: UserResetPasswordDto): Promise<User> {
@@ -134,7 +138,17 @@ export class UserService {
       throw new ForbiddenException('Access to resource denied');
     }
 
-    return this.userRepository.createUser(createDto, userRole);
+    let userAgency: Agency = currentUser.agency;
+
+    if (currentUserRole === UserRoles.SUPER_ADMIN && createDto.agency) {
+      userAgency = await this.agencyRepository.findAgencyByName(createDto.agency.agencyName);
+
+      if (!userAgency) {
+        throw new BadRequestException(`Unable to find agency with name ${createDto.agency.agencyName}`);
+      }
+    }
+
+    return this.userRepository.createUser(createDto, userRole, userAgency);
   }
 
   public async findSingleUser(userId: number, currentUser: User): Promise<User> {
@@ -188,7 +202,8 @@ export class UserService {
   }
 
   public async signUp(signupDto: UserSignupDto): Promise<User> {
-    const userRole: Role = await this.roleRepository.findRoleByName(UserRoles.USER);
+    const userAgency = await this.agencyRepository.findAgencyByName('Public'),
+      userRole: Role = await this.roleRepository.findRoleByName(UserRoles.USER);
 
     if (!userRole) {
       this.errorLogger.log({
@@ -199,7 +214,7 @@ export class UserService {
       throw new BadRequestException('Unable to signup user.');
     }
 
-    return this.userRepository.createUser(signupDto, userRole);
+    return this.userRepository.createUser(signupDto, userRole, userAgency);
   }
 
   public async softDeleteUser(currentUser: User, userId: number): Promise<User> {

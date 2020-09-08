@@ -3,22 +3,30 @@ import { Logger, InternalServerErrorException } from '@nestjs/common';
 import { Agency } from "@entities";
 
 export class AgencySeeder {
+  baseAgencies: Partial<Agency>[] = [
+    { agencyName: 'Main' },
+    { agencyName: 'Public' }
+  ];
+
   constructor() {}
 
   public async seed(): Promise<void> {
-    const agencyRepository: Repository<Agency> = getRepository('Agency'),
-      existingMainAgency: Agency = await agencyRepository.findOne({ agencyName: 'Main' });
+    const agencyRepository: Repository<Agency> = getRepository('Agency');
 
-    if (!existingMainAgency) {
-      Logger.log('Seeding main agency', 'AgencySeeder');
+    await Promise.all(this.baseAgencies.map(async (agency: Partial<Agency>) => {
+      const existingAgency: Agency = await agencyRepository.findOne({ agencyName: agency.agencyName });
 
-      try {
-        await agencyRepository.save({ agencyName: 'Main' });
+      if (!existingAgency) {
+        Logger.log(`Seeding ${agency.agencyName} agency`, 'AgencySeeder');
 
-        Logger.log('Main Agency seeded!', 'AgencySeeder');
-      } catch (error) {
-        throw new InternalServerErrorException(`Unable to seed agency - \n\n${error}`);
+        try {
+          await agencyRepository.save(agency);
+        } catch (error) {
+          throw new InternalServerErrorException(`Unable to seed agency - \n\n${error}`);
+        }
       }
-    }
+    }));
+
+    Logger.log('All base agencies seeded!', 'AgencySeeder');
   }
 }

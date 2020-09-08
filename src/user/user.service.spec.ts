@@ -1,24 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { UserRepository, RoleRepository } from '@entities';
+import { AgencyRepository, UserRepository, RoleRepository } from '@entities';
 
 describe('UserService', () => {
   let service: UserService;
 
-  const mockRoleRespository = () => ({}),
-    mockUserRespository = () => ({});
+  const mockAgencyRepository = () => ({}),
+    mockRoleRepository = () => ({}),
+    mockUserRepository = () => ({});
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
         {
+          provide: AgencyRepository,
+          useFactory: mockAgencyRepository
+        },
+        {
           provide: RoleRepository,
-          useFactory: mockRoleRespository
+          useFactory: mockRoleRepository
         },
         {
           provide: UserRepository,
-          useFactory: mockUserRespository
+          useFactory: mockUserRepository
         }
       ],
     }).compile();
