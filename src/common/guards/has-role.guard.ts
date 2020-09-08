@@ -11,7 +11,6 @@ import * as _ from 'lodash';
 @Injectable()
 export class HasRoleGuard implements CanActivate {
   errorLogger: ErrorLogger = new ErrorLogger('RoleGuard');
-  isProduction: boolean = environment.node_env === 'production';
 
   constructor(
     private reflector: Reflector
@@ -32,24 +31,16 @@ export class HasRoleGuard implements CanActivate {
       canAccess: boolean = rolesPassedToGuard.includes(userRole);
 
     if (!canAccess) {
-      return this.returnUnathorizedMessage(
-        `${method} ${currentRoute} requires the following roles: ${rolesPassedToGuard.join('|')}, but was requested with the role of ${userRole}. User Info - Id: ${user?.id}, UserName: ${user?.getFullName()}`
-      );
+      const errorMessage: string = `${method} ${currentRoute} requires the following roles: ${rolesPassedToGuard.join('|')}, but was requested with the role of ${userRole}. User Info - Id: ${user?.id}, UserName: ${user?.getFullName()}`;
+
+      this.errorLogger.log({
+        level: 'info',
+        message: errorMessage
+      });
+
+      throw new ForbiddenException(errorMessage);
     }
 
     return true;
-  }
-
-  returnUnathorizedMessage(message: string): boolean {
-    this.errorLogger.log({
-      level: 'info',
-      message
-    });
-
-    if (this.isProduction) {
-      throw new ForbiddenException('Forbidden resource');
-    }
-
-    throw new ForbiddenException(message);
   }
 }

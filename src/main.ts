@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, INestApplication, ValidationPipe } from '@nestjs/common';
 
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { CorsUtility } from '@utilities/security/cors.utility';
 import { DatabaseUtility } from '@utilities/database';
 import { EventLogger } from '@utilities/logging/event-logger.utility';
@@ -47,6 +48,7 @@ class BoilerplateServer {
 
     this.swaggerUtility.initializeSwagger(this.app);
 
+    this.app.useGlobalFilters(new AllExceptionsFilter());
     this.app.useGlobalInterceptors(new EventLoggerInterceptor());
     this.app.useGlobalPipes(new ValidationPipe({
       transform: true,

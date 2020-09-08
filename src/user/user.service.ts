@@ -64,7 +64,7 @@ export class UserService {
     currentUser: User
   ): Promise<JwtResponseDto> {
     if (userId !== currentUser.id) {
-      throw new ForbiddenException(`Cannot change another users password`);
+      throw new ForbiddenException(`Cannot change another user's password`);
     }
 
     if (passwordChangePayload.newPassword !== passwordChangePayload.confirmPassword) {
