@@ -11,7 +11,7 @@ export enum UserRoles {
   SUPER_ADMIN = 'Super Administrator'
 }
 
-const RoleHierarchy = {
+export const RoleHierarchy = {
   [`${UserRoles.SUPER_ADMIN}`]: 4,
   [`${UserRoles.ADMIN}`]:       3,
   [`${UserRoles.EDITOR}`]:      2,

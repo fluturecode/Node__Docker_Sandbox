@@ -4,8 +4,6 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { User } from '@entities';
 
-import environment from '@environment';
-
 import * as _ from 'lodash';
 
 @Injectable()
@@ -17,12 +15,12 @@ export class HasRoleGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const rolesPassedToGuard: string[] = this.reflector.get<string[]>('requiredRoles', context.getHandler()),
+    const rolesPassedToGuard: string[] = this.reflector.get<string[]>('requiredRoles', context.getHandler()) || [],
       request: Request = context.switchToHttp().getRequest(),
       currentRoute: string = request.path,
       method: string = request.method;
 
-    if (!rolesPassedToGuard) {
+    if (!rolesPassedToGuard.length) {
       return true;
     }
 
