@@ -27,21 +27,23 @@ import {
 } from '@nestjs/swagger';
 
 import { User, UserRoles } from '@entities';
-import { HasRoleGuard } from '@guards';
+import { HasRoleGuard, SameUserGuard } from '@guards';
 import { RequiredRoles, GetCurrentUser } from '@decorators';
 
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 import {
+  UserChangePasswordDto,
   UserCreationDto,
   UserForgotPasswordDto,
   UserResetPasswordDto,
   UserSignupDto,
-  UserUpdateDto
+  UserUpdateDto,
+  UserUpdateProfileDto
 } from './dto';
-import { UserChangePasswordDto } from './dto/user-change-password.dto';
-import { JwtResponseDto } from 'src/auth/dto/jwt-response.dto';
+
+import { JwtResponseDto } from '../auth/dto/jwt-response.dto';
 
 @ApiTags('Users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -135,6 +137,19 @@ export class UserController {
   }
 
   @ApiBearerAuth()
+  @ApiOkResponse({ description: 'User profile fetched successfully', type: User })
+  @ApiUnauthorizedResponse({ description: 'Invalid authorization token' })
+  @ApiForbiddenResponse({ description: `Cannot get another user's profile` })
+  @UseGuards(JwtAuthGuard, SameUserGuard)
+  @Get('/profile/:id')
+  async getUserProfile(
+    @GetCurrentUser() user: User,
+    @Param('id', ParseIntPipe) userId: number
+  ): Promise<User> {
+    return this.userService.findSingleUser(userId, user);
+  }
+
+  @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Activation email sent successfully', type: User })
   @ApiResponse({ status: 400, description: 'Payload error' })
   @ApiResponse({ status: 401, description: 'Invalid or missing Auth token' })
@@ -183,6 +198,21 @@ export class UserController {
     @Param('id', ParseIntPipe) userId: number
   ): Promise<User> {
     return this.userService.softDeleteUser(currentUser, userId);
+  }
+
+  @ApiBearerAuth()
+  @ApiOkResponse({ description: 'User profile successfully updated', type: User })
+  @ApiBadRequestResponse({ description: 'Error with user payload' })
+  @ApiUnauthorizedResponse({ description: 'Invalid authorization token' })
+  @ApiForbiddenResponse({ description: `Cannot update another user's profile` })
+  @UseGuards(JwtAuthGuard, SameUserGuard)
+  @Put('/profile/:id')
+  async updateProfile(
+    @GetCurrentUser() user: User,
+    @Param('id', ParseIntPipe) userId: number,
+    @Body() userData: UserUpdateProfileDto
+  ): Promise<User> {
+    return this.userService.updateUserProfile(user, userId, userData);
   }
 
   @ApiBearerAuth()

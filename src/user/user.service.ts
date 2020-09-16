@@ -7,10 +7,12 @@ import {
 } from '@nestjs/common';
 
 import {
+  UserChangePasswordDto,
   UserCreationDto,
   UserResetPasswordDto,
   UserSignupDto,
-  UserUpdateDto
+  UserUpdateDto,
+  UserUpdateProfileDto
 } from './dto';
 
 import {
@@ -23,15 +25,14 @@ import {
   Agency
 } from '@entities';
 
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { JwtResponseDto } from '../auth/dto/jwt-response.dto';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 import { ErrorLogger } from '@utilities/logging/error-logger.utility';
 import { DatabaseErrorCodes } from '@consts/error-codes.consts';
-
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
-import { UserChangePasswordDto } from './dto/user-change-password.dto';
-import { JwtResponseDto } from '../auth/dto/jwt-response.dto';
 
 import * as _ from 'lodash';
 
@@ -234,6 +235,24 @@ export class UserService {
     });
 
     return deletedUser;
+  }
+
+  public async updateUserProfile(currentUser: User, userId: number, userData: UserUpdateProfileDto): Promise<User> {
+    const userToUpdate: User = await this.findSingleUser(userId, currentUser);
+
+    Object.assign(userToUpdate, userData);
+
+    try {
+      const updatedUser: User = await userToUpdate.save();
+
+      return updatedUser;
+    } catch (error) {
+      if (error.code === DatabaseErrorCodes.DuplicateKeyConstraint) {
+        throw new BadRequestException(error.detail);
+      }
+
+      throw error;
+    }
   }
 
   public async updateSingleUser(currentUser: User, userId: number, userData: UserUpdateDto): Promise<User> {
