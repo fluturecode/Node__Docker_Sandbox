@@ -13,7 +13,7 @@ jobs:
         environment:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: goodpassword1$
-          POSTGRES_DB: e2e_testing
+          POSTGRES_DB: test_db
 
     steps:
       - checkout
@@ -32,6 +32,9 @@ jobs:
           key: v1-deps-{{ checksum "package.json" }}
           paths:
             - ./node_modules
+      - run:
+          name: run-migrations
+          command: 'npm run db:migrate-testdb'
       - run:
           name: run-unit-tests
           command: 'npm run test'

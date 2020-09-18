@@ -3,8 +3,10 @@ import * as dotenv from 'dotenv';
 if (process.env.NODE_ENV === 'test') {
   dotenv.config();
 
-  process.env.DB_HOST = 'localhost';
-  process.env.ERROR_LOGS = `${__dirname}/../server-logs`;
+  Object.assign(process.env, {
+    ERROR_LOGS: `${__dirname}/../server-logs`,
+    DB_HOST: 'localhost'
+  });
 }
 
 export default {

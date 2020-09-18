@@ -50,8 +50,7 @@ export class ErrorLogger {
         }),
         new winston.transports.File({
           filename: this.errorLogPath,
-          level: 'error',
-          handleExceptions: true
+          level: 'error'
         })
       ]
     });
@@ -67,6 +66,10 @@ export class ErrorLogger {
   }
 
   public log(logConfig: LogConfig): void {
+    if (environment.node_env === 'test') {
+      return;
+    }
+
     if (logConfig.error) {
       logConfig.message += ' - Error: ';
     }
@@ -76,5 +79,7 @@ export class ErrorLogger {
       scrubData(logConfig.message, ['jwtToken', 'password']),
       logConfig.error
     );
+
+    this.winstonLogger.clear();
   }
 }

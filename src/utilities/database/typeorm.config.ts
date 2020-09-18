@@ -7,7 +7,7 @@ import environment from '../../environment';
  * which is controlled through a Typeorm enum and must be hard coded
  */
 
-export const typeOrmConfig: ConnectionOptions = {
+export const TypeOrmConfig: ConnectionOptions = {
     type: 'postgres',
     host: environment.db_host,
     port: environment.db_port,

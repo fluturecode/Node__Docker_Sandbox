@@ -17,6 +17,7 @@
       "@environment": ["src/environment"],
       "@guards": ["src/common/guards/index"],
       "@metadata": ["src/meta-data"],
+      "@mockedclasses": ["src/common/mocked-classes/index"],
       "@seeds/*": ["src/seeds/*"],
       "@utilities/*": ["src/utilities/*"]
     }

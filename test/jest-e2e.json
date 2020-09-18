@@ -7,7 +7,8 @@
     "@entities": "<rootDir>/../src/entities/index",
     "@environment": ["<rootDir>/../src/environment"],
     "@guards": "<rootDir>/../src/common/guards/index",
-    "@seeds": ["<rootDir>/../src/seeds/$1"],
+    "@mockedclasses": ["<rootDir>/../src/common/mocked-classes/index"],
+    "@seeds": ["<rootDir>/../src/seeds/index"],
     "@utilities/(.*)": ["<rootDir>/../src/utilities/$1"]
   },
   "testEnvironment": "node",

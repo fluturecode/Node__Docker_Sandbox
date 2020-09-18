@@ -3,38 +3,23 @@ import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { getConnection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from '../src/utilities/database/typeorm.config';
+import { EndToEndTestingTypeOrmConfig } from '@utilities/database/e2e-testing.config';
 
 import * as request from 'supertest';
-
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         AppModule,
-        TypeOrmModule.forRoot(
-          Object.assign(
-            {},
-            typeOrmConfig,
-            {
-              database: 'e2e_testing',
-              host: 'localhost',
-              name: 'e2e_testing',
-              username: 'root',
-              password: 'goodpassword1$'
-            }
-          )
-        )
-      ],
+        TypeOrmModule.forRoot(EndToEndTestingTypeOrmConfig)
+      ]
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
-    await getConnection('default').close();
   });
 
   it('/health-check (GET) should return a valid health check', () => {
@@ -54,7 +39,8 @@ describe('AppController (e2e)', () => {
       });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
+    await getConnection('default').close();
     await getConnection('e2e_testing').close();
   });
 });

@@ -54,13 +54,17 @@ export class UserService {
   public async activateUserAccount(token: string, passwordPayload: UserResetPasswordDto): Promise<User> {
     const user: User = await this.findUserFromToken(token);
 
+    if (!user) {
+      throw new BadRequestException(`Could not find user from token provided`);
+    }
+
     this.validateUserAndPasswordPayload(user, passwordPayload);
 
     await this.validateTemporaryUserToken(token, user.temporaryTokenHash);
 
     user.activatedAt = new Date();
 
-    return this.userRepository.setPassword(user, passwordPayload.newPassword);
+    return await this.userRepository.setPassword(user, passwordPayload.newPassword);
   }
 
   public async changeUserPassword(
@@ -128,7 +132,7 @@ export class UserService {
     }
 
     const currentUserRole: UserRoles = currentUser.role.roleName,
-      canAccessRole: boolean = userRole.canAccessRole(userRole.roleName);
+      canAccessRole: boolean = currentUser.role.canAccessRole(userRole.roleName);
 
     if (!canAccessRole) {
       this.errorLogger.log({
@@ -149,7 +153,7 @@ export class UserService {
       }
     }
 
-    return this.userRepository.createUser(createDto, userRole, userAgency);
+    return await this.userRepository.createUser(createDto, userRole, userAgency);
   }
 
   public async findSingleUser(userId: number, currentUser: User): Promise<User> {
@@ -189,7 +193,7 @@ export class UserService {
 
     await this.validateTemporaryUserToken(token, user.temporaryTokenHash);
 
-    return this.userRepository.setPassword(user, passwordPayload.newPassword);
+    return await this.userRepository.setPassword(user, passwordPayload.newPassword);
   }
 
   public async sendResetPasswordEmail(email: string): Promise<{message: string}> {
@@ -215,7 +219,7 @@ export class UserService {
       throw new BadRequestException('Unable to signup user.');
     }
 
-    return this.userRepository.createUser(signupDto, userRole, userAgency);
+    return await this.userRepository.createUser(signupDto, userRole, userAgency);
   }
 
   public async softDeleteUser(currentUser: User, userId: number): Promise<User> {
@@ -325,7 +329,15 @@ export class UserService {
   }
 
   private async findUserFromToken(token: string): Promise<User> {
+    if (!token) {
+      throw new BadRequestException(`No token was passed`);
+    }
+
     const jwtPayload: JwtPayload = await this.jwtUtility.decodeJwtToken(token);
+
+    if (!jwtPayload.id || !jwtPayload.email) {
+      throw new BadRequestException(`Invalid token missing user ID or email`);
+    }
 
     return await this.userRepository.findUserByJwtPayload(jwtPayload);
   }
@@ -339,13 +351,13 @@ export class UserService {
 
     this.jwtUtility.changeJwtOptions({ secret: tokenSecret });
 
-    const validToken = this.jwtUtility.verifyToken<JwtPayload>(token);
+    try {
+      this.jwtUtility.verifyToken<JwtPayload>(token);
 
-    if (!validToken) {
+      return true;
+    } catch (error) {
       throw invalidTokenException;
     }
-
-    return true;
   }
 
   private validateUserAndPasswordPayload(user: User, passwordPayload: UserResetPasswordDto): void {

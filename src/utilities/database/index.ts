@@ -1,9 +1,7 @@
 import { createConnection, Connection, getConnection } from 'typeorm';
-import { typeOrmConfig } from './typeorm.config';
+import { TypeOrmConfig } from './typeorm.config';
 import { Logger } from '@nestjs/common';
 import { DatabaseSeeder } from '@seeds/index';
-
-import environment from 'src/environment';
 
 export class DatabaseUtility {
   databaseConnection: Connection;
@@ -12,17 +10,13 @@ export class DatabaseUtility {
   constructor() {}
 
   async connect(): Promise<void> {
-    this.databaseConnection = await createConnection(typeOrmConfig);
+    this.databaseConnection = await createConnection(TypeOrmConfig);
 
     this.checkForMigrations();
   }
 
-  async checkForMigrations(): Promise<void> {
-    if (environment.node_env === 'test') {
-      return;
-    }
-
-    this.databaseConnection = await getConnection();
+  async checkForMigrations(connection?: Connection): Promise<void> {
+    this.databaseConnection = connection || await getConnection();
 
     const pendingMigrations: boolean = await this.databaseConnection.showMigrations();
 
