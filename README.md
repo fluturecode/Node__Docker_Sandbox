@@ -40,6 +40,8 @@ The first steps are to install all of the project requirements above, skipping a
 
 The postgres database will have the name and user credentials that are specified in the .env file. If you need to change them and don't mind resetting the database, you will have to use the command `docker-compose down -v` to remove both the containers and the volumes.
 
+Be sure to fill out your `.env` file and the `USER_SEED_EMAIL` variable. Filling out this variable will create a user for you on startup. You should receive a welcome email to activate your account, simply pull the token from the email and use either Postman or Swagger to activate your user account.
+
 Once the server is up and running simply navigate to [localhost:3000](http://localhost:3000)! The database should be connectable via a database client such as [PGAdmin](https://www.pgadmin.org/) or [DBeaver](https://dbeaver.io/) by using the credentials in your .env to connect to [localhost:5432].
 
 ## Development Process
@@ -120,21 +122,41 @@ Once this is completed, navigate to the staging folder in your terminal and run 
     - This also gives you the chance to make adjustments if need be to ensure the output is correct for what you need. (domain name, environment variables for EB etc.)
 2. `terraform apply`
     - The apply command will actually setup all of the required AWS services to deploy this project. Terraform will save a state file for you, and can continue from where it left off if something goes wrong.
+3. Once everything is done building, you need to set the environment variables for the database now that we have a live RDS instance. Near the top of our `secrets-staging.auto.tfvars` file you should have something similar to the following:
+
+```
+eb_env_variables = {
+  APPLICATION_NAME = ""
+  AWS_REGION       = "us-west-2"
+  CLIENT_URL       = ""
+  DB_HOST          = ""
+  DB_NAME          = ""
+  DB_PASSWORD      = ""
+  DB_PORT          = "5432"
+  DB_USER          = ""
+  EMAIL_DOMAIN     = ""
+  ERROR_LOGS       = "/opt/node/app/server-logs"
+  JWT_SECRET       = ""
+  NODE_ENV         = "production"
+  SENTRY_DSN       = ""
+  SERVER_PORT      = "3000"
+}
+```
+
+The `DB_HOST` will represent the url to your RDS instance, which is not available until after we run `terraform apply` the first time. You can get this url from the aws console [Connecting to a DB instance](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ConnectToInstance.html). Be sure to fill in the rest of the variables related to the database (`DB_NAME` | `DB_PASSWORD` etc.) and run `terraform apply` again to update elastic beanstalk.
 
 If all goes well, you can then begin the actual deployment of your code!
 
 ##### Deploying your application
 
-Deployments are all done using the deployment script included in the project. Simply copy the `deploy.example.sh` file to `deploy.sh` in the root of the project. Fill in the variables at the top of the script, or get the script from Zoho Vault/Project lead. Then ensure you copy the `Dockerrun.example.aws.json` file to `Dockerrun.aws.json` file in the root. Get the image name from your project lead or from the ecr repository directions. [Setting up ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-console.html)
+Deployments are all done using the deployment script included in the project. Simply copy the `deploy.example.sh` file to `deploy.sh` in the root of the project. Fill in the variables at the top of the script, or get the script from Zoho Vault/Project lead. Get the image name from your project lead or from the ecr repository directions. [Setting up ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-console.html)
 
-Before every deployment, make sure to update the following items:
-
-1. Update the version of the application in the `Dockerrun.aws.json` file, be sure to add and commit any file changes.
-2. Update your project version in the `package.json`
+Before every deployment, make sure to update your project version in the `package.json`. The version in this file is what the script reads and builds to send to ecr for automated deployments.
 
 Once you've done all required checks, and are ready to proceed, run the following commands to deploy your code.
 
 1. Ensure you are deploying to the correct environment (Sandbox vs Production)
-2. Run `bash docker-deploy.sh` and when prompted enter the same version number in your `Dockerrun.aws.json` file.
+2. Run `bash docker-deploy.sh`
+3. The script will ask you to confirm your build version before proceeding
 
 The script will take care of building your project with Docker, deploying the latest build to ECR and finally running `eb deploy` to push your build to elastic beanstalk!

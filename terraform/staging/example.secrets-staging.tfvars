@@ -1,7 +1,7 @@
 # Environment variables needed for Elastic Beanstalk
 eb_env_variables = {
   APPLICATION_NAME = ""
-  AWS_REGION       = ""
+  AWS_REGION       = "us-west-2"
   CLIENT_URL       = ""
   DB_HOST          = ""
   DB_NAME          = ""

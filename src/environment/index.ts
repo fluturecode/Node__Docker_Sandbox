@@ -24,5 +24,6 @@ export default {
   jwt_secret: process.env.JWT_SECRET,
   node_env: process.env.NODE_ENV,
   port: parseInt(process.env.PORT, 10) || 3000,
-  sentry_dsn: process.env.SENTRY_DSN
+  sentry_dsn: process.env.SENTRY_DSN,
+  user_seed_email: process.env.USER_SEED_EMAIL
 };

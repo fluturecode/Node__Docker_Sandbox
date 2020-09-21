@@ -1,6 +1,8 @@
 import { Logger } from '@nestjs/common';
-import { UserRoleSeeder } from '@seeds/user-roles.seed';
+
 import { AgencySeeder } from '@seeds/agency.seed';
+import { UserRoleSeeder } from '@seeds/user-roles.seed';
+import { UserSeeder } from '@seeds/user.seed';
 
 interface DatabaseSeed {
   order: number;
@@ -16,6 +18,10 @@ export class DatabaseSeeder {
     {
       order: 2,
       classConstructor: AgencySeeder
+    },
+    {
+      order: 3,
+      classConstructor: UserSeeder
     }
   ];
 
