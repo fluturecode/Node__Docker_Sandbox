@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { EmailUtility } from '@utilities/email/email.utility';
 import { JwtUtility } from '@utilities/jwt/jwt.utility';
 import { Exclude } from 'class-transformer';
-import { Agency, Role, S3BaseEntity } from '@entities';
+import { Agency, Role, S3BaseEntity, UserRoles } from '@entities';
 
 import environment from '@environment';
 
@@ -65,6 +65,14 @@ export class User extends S3BaseEntity {
     this.password = passwordHash;
 
     return passwordHash;
+  }
+
+  public hasRole(roleName: UserRoles): boolean {
+    return this.role.roleName === roleName;
+  }
+
+  public hasRoleInRoleList(roleNames: UserRoles[]): boolean {
+    return roleNames.includes(this.role.roleName);
   }
 
   public async sendWelcomeEmail(): Promise<User> {

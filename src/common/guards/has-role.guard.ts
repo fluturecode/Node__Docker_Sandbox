@@ -2,9 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@
 import { ErrorLogger } from '@utilities/logging/error-logger.utility';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { User } from '@entities';
-
-import * as _ from 'lodash';
+import { User, UserRoles } from '@entities';
 
 @Injectable()
 export class HasRoleGuard implements CanActivate {
@@ -15,7 +13,7 @@ export class HasRoleGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const rolesPassedToGuard: string[] = this.reflector.get<string[]>('requiredRoles', context.getHandler()) || [],
+    const rolesPassedToGuard: UserRoles[] = this.reflector.get<UserRoles[]>('requiredRoles', context.getHandler()) || [],
       request: Request = context.switchToHttp().getRequest(),
       currentRoute: string = request.path,
       method: string = request.method;
@@ -24,12 +22,14 @@ export class HasRoleGuard implements CanActivate {
       return true;
     }
 
-    const user: User = _.get(request, 'user') as User,
-      userRole: string = _.get(user, 'role.roleName'),
-      canAccess: boolean = rolesPassedToGuard.includes(userRole);
+    const user: User = request.user as User;
 
-    if (!canAccess) {
-      const errorMessage: string = `${method} ${currentRoute} requires the following roles: ${rolesPassedToGuard.join('|')}, but was requested with the role of ${userRole}. User Info - Id: ${user?.id}, UserName: ${user?.getFullName()}`;
+    if (!user) {
+      throw new ForbiddenException(`Access denied.`);
+    }
+
+    if (!user.hasRoleInRoleList(rolesPassedToGuard)) {
+      const errorMessage: string = `${method} ${currentRoute} requires the following roles: ${rolesPassedToGuard.join('|')}, but was requested with the role of ${user.role.roleName}. User Info - Id: ${user.id}, UserName: ${user.getFullName()}`;
 
       this.errorLogger.log({
         level: 'info',

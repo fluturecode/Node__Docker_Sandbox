@@ -6,8 +6,7 @@ import { JwtUtility } from '@utilities/jwt/jwt.utility';
 
 import { Agency, Role, User } from '@entities';
 import { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
-import { UserCreationDto } from '../../user/dto/user-creation.dto';
-import { UserSignupDto } from '../../user/dto/user-signup.dto';
+import { UserCreationDto, UserQueryParamsDto, UserSignupDto } from '../../user/dto';
 
 import environment from '@environment';
 
@@ -59,14 +58,14 @@ export class UserRepository extends Repository<User> {
     return await user.save();
   }
 
-  public findAllUsers(currentUser: User): Promise<User[]> {
+  public findAllUsers(currentUser: User, queryParams: UserQueryParamsDto): Promise<User[]> {
     return this.createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
       .where('role.id = user.role')
       .leftJoinAndSelect('user.agency', 'agency')
       .where('agency.id = user.agency')
       .andWhere('role.roleName IN (:...roleNames)', { roleNames: currentUser.role.allowedUserRoles })
-      .andWhere('agency.id = :agencyId', { agencyId: currentUser.agency.id })
+      .andWhere('agency.id = :agencyId', { agencyId: queryParams.agencyId || currentUser.agency.id })
       .orderBy({
         'user.lastName': 'ASC',
         'user.id': 'DESC'

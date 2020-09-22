@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   UseGuards,
   UseInterceptors,
   ValidationPipe,
@@ -37,6 +38,7 @@ import {
   UserChangePasswordDto,
   UserCreationDto,
   UserForgotPasswordDto,
+  UserQueryParamsDto,
   UserResetPasswordDto,
   UserSignupDto,
   UserUpdateDto,
@@ -132,8 +134,13 @@ export class UserController {
   @Get('')
   async getAllUsers(
     @GetCurrentUser() user: User,
+    @Query(ValidationPipe) queryParams: UserQueryParamsDto
   ): Promise<User[]> {
-    return this.userService.getAllUsers(user);
+    if (!user.hasRole(UserRoles.SUPER_ADMIN)) {
+      delete queryParams.agencyId;
+    }
+
+    return this.userService.getAllUsers(user, queryParams);
   }
 
   @ApiBearerAuth()

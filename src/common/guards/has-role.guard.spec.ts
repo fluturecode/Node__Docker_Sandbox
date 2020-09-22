@@ -7,6 +7,9 @@ describe('HasRoleGuard', () => {
   const testSuperAdminUser = {
     id: 1,
     getFullName: () => 'Test Super Admin',
+    hasRoleInRoleList: (roles: UserRoles[]) => {
+      return roles.includes(UserRoles.SUPER_ADMIN)
+    },
     role: {
       roleName: UserRoles.SUPER_ADMIN
     } as Role
@@ -14,12 +17,16 @@ describe('HasRoleGuard', () => {
 
   const noRoleUser = {
     id: 2,
-    getFullName: () => 'Test No Role'
+    getFullName: () => 'Test No Role',
+    hasRoleInRoleList: () => false
   } as unknown as User;
 
   const testUser = {
     id: 3,
     getFullName: () => 'Test User',
+    hasRoleInRoleList: (roles: UserRoles[]) => {
+      return roles.includes(UserRoles.USER)
+    },
     role: {
       roleName: UserRoles.USER
     } as Role

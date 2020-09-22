@@ -9,6 +9,7 @@ import {
 import {
   UserChangePasswordDto,
   UserCreationDto,
+  UserQueryParamsDto,
   UserResetPasswordDto,
   UserSignupDto,
   UserUpdateDto,
@@ -170,8 +171,8 @@ export class UserService {
     return user;
   }
 
-  public async getAllUsers(currentUser: User): Promise<User[]> {
-    return this.userRepository.findAllUsers(currentUser);
+  public async getAllUsers(currentUser: User, queryParams: UserQueryParamsDto): Promise<User[]> {
+    return this.userRepository.findAllUsers(currentUser, queryParams);
   }
 
   public async resendActivationEmail(userId: number, currentUser: User): Promise<User> {
