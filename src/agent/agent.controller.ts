@@ -12,29 +12,43 @@ import {
   UseInterceptors,
   ValidationPipe
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse
+} from '@nestjs/swagger';
 
 import { AgentCreationDto } from './dto/agent-creation.dto';
 import { AgentUpdateDto } from './dto/agent-update.dto';
-import { Agent, User } from '@entities';
+import { Agent, User, UserRoles } from '@entities';
 
 import { AgentService } from './agent.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { GetCurrentUser } from '@decorators';
+import { GetCurrentUser, RequiredRoles } from '@decorators';
+import { HasRoleGuard } from '@guards';
 
 @ApiTags('Agents')
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('agents')
 export class AgentController {
+  requiredCrudRoles: UserRoles[] = [UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.EDITOR];
+
   constructor(
     private agentService: AgentService
   ) {}
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 201, description: 'Agent created successfully', type: Agent })
-  @ApiResponse({ status: 401, description: 'Invalid authorization token' })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
-  @UseGuards(JwtAuthGuard)
+  @ApiCreatedResponse({ description: 'Agent created successfully', type: Agent })
+  @ApiUnauthorizedResponse({ description: 'Invalid authorization token' })
+  @ApiForbiddenResponse({ description: 'Access denied' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @RequiredRoles(this.requiredCrudRoles)
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
   @Post('')
   async createAgent(
     @GetCurrentUser() user: User,
@@ -44,9 +58,9 @@ export class AgentController {
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Agents fetched successfully', type: Agent, isArray: true })
-  @ApiResponse({ status: 401, description: 'Invalid authorization token' })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiOkResponse({ description: 'Agents fetched successfully', type: Agent, isArray: true })
+  @ApiUnauthorizedResponse({ description: 'Invalid authorization token' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UseGuards(JwtAuthGuard)
   @Get('')
   async getAllAgents(
@@ -56,9 +70,9 @@ export class AgentController {
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Agent fetched successfully', type: Agent })
-  @ApiResponse({ status: 401, description: 'Invalid authorization token' })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiOkResponse({ description: 'Agent fetched successfully', type: Agent })
+  @ApiUnauthorizedResponse({ description: 'Invalid authorization token' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getOneAgent(
@@ -69,10 +83,12 @@ export class AgentController {
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Agent deleted successfully', type: Agent })
-  @ApiResponse({ status: 401, description: 'Invalid authorization token' })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
-  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Agent deleted successfully', type: Agent })
+  @ApiUnauthorizedResponse({ description: 'Invalid authorization token' })
+  @ApiForbiddenResponse({ description: 'Access denied' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @RequiredRoles(this.requiredCrudRoles)
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
   @Delete(':id')
   async softDeleteAgent(
     @GetCurrentUser() user: User,
@@ -82,10 +98,12 @@ export class AgentController {
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Agent updated successfully', type: Agent })
-  @ApiResponse({ status: 401, description: 'Invalid authorization token' })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
-  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Agent updated successfully', type: Agent })
+  @ApiUnauthorizedResponse({ description: 'Invalid authorization token' })
+  @ApiForbiddenResponse({ description: 'Access denied' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @RequiredRoles(this.requiredCrudRoles)
+  @UseGuards(JwtAuthGuard, HasRoleGuard)
   @Put(':id')
   async updateAgent(
     @GetCurrentUser() user: User,
