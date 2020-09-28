@@ -1,6 +1,6 @@
 {
   "name": "boilerplate-server-node",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Shift3 nodejs boilerplate",
   "private": true,
   "repository": {
@@ -106,7 +106,7 @@
       "@environment": "<rootDir>/environment",
       "@guards": "<rootDir>/common/guards/index",
       "@metadata": "<rootDir>/meta-data",
-      "@mockedclasses": ["<rootDir>/common/mocked-classes/index"],
+      "@mockedclasses": "<rootDir>/common/mocked-classes/index",
       "@seeds": "<rootDir>/seeds/index",
       "@utilities/(.*)": "<rootDir>/utilities/$1"
     },
@@ -115,6 +115,13 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [
+      "consts",
+      "dto",
+      "environment",
+      "migrations",
+      "node_modules"
+    ],
     "testEnvironment": "node"
   }
 }
