@@ -11,15 +11,18 @@
     "baseUrl": "./",
     "incremental": true,
     "paths": {
-      "@consts/*": ["src/consts/*"],
+      "@common/*": ["src/common/*"],
+      "@consts/*": ["src/common/consts/*"],
+      "@database/*": ["src/database/*"],
       "@decorators": ["src/common/decorators/index"],
-      "@entities": ["src/entities/index"],
       "@environment": ["src/environment"],
       "@guards": ["src/common/guards/index"],
       "@metadata": ["src/meta-data"],
-      "@mockedclasses": ["src/common/mocked-classes/index"],
-      "@seeds/*": ["src/seeds/*"],
-      "@utilities/*": ["src/utilities/*"]
+      "@mockedclasses": ["src/common/utilities/mocked-classes/index"],
+      "@models": ["src/database/models/index"],
+      "@modules/*": ["src/modules/*"],
+      "@seeds/*": ["src/database/seeds/*"],
+      "@utilities/*": ["src/common/utilities/*"]
     }
   },
   "exclude": ["node_modules", "dist"]

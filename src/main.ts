@@ -2,12 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, INestApplication, ValidationPipe } from '@nestjs/common';
 
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
+import { EventLoggerInterceptor } from '@common/interceptors/event-logger.interceptor';
+
 import { CorsUtility } from '@utilities/security/cors.utility';
-import { DatabaseUtility } from '@utilities/database';
 import { EventLogger } from '@utilities/logging/event-logger.utility';
-import { EventLoggerInterceptor } from './interceptors/event-logger.interceptor';
 import { SwaggerUtility } from '@utilities/swagger';
+
+import { DatabaseModule } from '@database/index';
 
 import appMetaData from '@metadata';
 import environment from '@environment';
@@ -16,7 +18,7 @@ import * as sentry from '@sentry/node';
 
 class BoilerplateServer {
   app: INestApplication;
-  databaseUtility: DatabaseUtility = new DatabaseUtility();
+  databaseModule: DatabaseModule = new DatabaseModule();
   eventLogger: EventLogger = new EventLogger();
   swaggerUtility: SwaggerUtility = new SwaggerUtility();
 
@@ -40,9 +42,9 @@ class BoilerplateServer {
       }
     );
 
-    await this.databaseUtility.checkForMigrations();
+    await this.databaseModule.checkForMigrations();
 
-    await this.databaseUtility.seedDatabase();
+    await this.databaseModule.seedDatabase();
 
     this.app.enableCors(new CorsUtility().returnCorsConfig());
 

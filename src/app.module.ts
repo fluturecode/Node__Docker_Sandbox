@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { TypeOrmConfig } from '@database/typeorm.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmConfig } from './utilities/database/typeorm.config';
 
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { SentryInterceptor } from './interceptors/sentry.interceptor';
-import { UserModule } from './user/user.module';
-import { RoleModule } from './role/role.module';
-import { AgentModule } from './agent/agent.module';
-import { AgencyModule } from './agency/agency.module';
+import { SentryInterceptor } from '@common/interceptors/sentry.interceptor';
+
+import { AgencyModule } from '@modules/agency/agency.module';
+import { AgentModule } from '@modules/agent/agent.module';
+import { AuthModule } from '@modules/auth/auth.module';
+import { RoleModule } from '@modules/role/role.module';
+import { UserModule } from '@modules/user/user.module';
 
 @Module({
   imports: [

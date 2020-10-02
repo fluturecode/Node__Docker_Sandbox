@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { getConnection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EndToEndTestingTypeOrmConfig } from '@utilities/database/e2e-testing.config';
+import { EndToEndTestingTypeOrmConfig } from '@database/e2e-testing.config';
 
 import * as request from 'supertest';
 

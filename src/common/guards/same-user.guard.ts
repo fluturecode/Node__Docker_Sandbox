@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ErrorLogger } from '@utilities/logging/error-logger.utility';
 import { Request } from 'express';
-import { User } from '@entities';
+import { User } from '@models';
 
 import * as _ from 'lodash';
 

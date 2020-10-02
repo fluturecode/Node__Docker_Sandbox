@@ -8,13 +8,13 @@
   "synchronize": false,
   "logging": true,
   "entities": [
-     "src/entities/**/*.entity.ts"
+     "src/database/models/**/*.entity.ts"
   ],
   "migrations": [
-     "src/migrations/*.ts"
+     "src/database/migrations/*.ts"
   ],
   "cli": {
-     "entitiesDir": "src/entities",
-     "migrationsDir": "src/migrations"
+     "entitiesDir": "src/database/models",
+     "migrationsDir": "src/database/migrations"
   }
 }

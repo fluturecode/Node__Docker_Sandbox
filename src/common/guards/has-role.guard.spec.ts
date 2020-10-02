@@ -1,5 +1,5 @@
 import { HasRoleGuard } from './has-role.guard';
-import { User, UserRoles, Role } from '../../entities';
+import { User, UserRoles, Role } from '@models';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext } from '@nestjs/common';
 
