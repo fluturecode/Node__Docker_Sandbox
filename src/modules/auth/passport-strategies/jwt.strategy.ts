@@ -9,7 +9,6 @@ import { JwtUtility } from '@utilities/jwt/jwt.utility';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { User } from '@models';
 
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private jwtUtility: JwtUtility = new JwtUtility();

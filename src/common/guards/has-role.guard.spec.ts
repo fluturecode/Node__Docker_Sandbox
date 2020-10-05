@@ -8,7 +8,7 @@ describe('HasRoleGuard', () => {
     id: 1,
     getFullName: () => 'Test Super Admin',
     hasRoleInRoleList: (roles: UserRoles[]) => {
-      return roles.includes(UserRoles.SUPER_ADMIN)
+      return roles.includes(UserRoles.SUPER_ADMIN);
     },
     role: {
       roleName: UserRoles.SUPER_ADMIN
@@ -25,7 +25,7 @@ describe('HasRoleGuard', () => {
     id: 3,
     getFullName: () => 'Test User',
     hasRoleInRoleList: (roles: UserRoles[]) => {
-      return roles.includes(UserRoles.USER)
+      return roles.includes(UserRoles.USER);
     },
     role: {
       roleName: UserRoles.USER

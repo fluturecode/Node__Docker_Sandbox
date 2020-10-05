@@ -10,7 +10,7 @@ import { mockUserRepository } from '@utilities/mocked-classes';
 import { UnitTestingTypeOrmConfig } from '@database/unit-testing.config';
 
 import { UserChangePasswordDto, UserCreationDto, UserResetPasswordDto } from './dto';
-import { AgencyRepository, UserRepository, RoleRepository, User, Role, UserRoles } from '@models';
+import { Agency, AgencyRepository, Role, RoleRepository, User, UserRepository, UserRoles } from '@models';
 
 
 describe('UserService', () => {
@@ -44,7 +44,7 @@ describe('UserService', () => {
     lastName: 'User',
     profilePicture: 'No Picture',
     role: nonExistingRole,
-    agency: { agencyName: 'Blah' }
+    agency: { agencyName: 'Blah' } as Agency
   };
 
   const badRoleCreateUserDto: UserCreationDto = {
@@ -74,7 +74,7 @@ describe('UserService', () => {
     agency: {
       id: 1,
       agencyName: 'Main'
-    }
+    } as Agency
   };
 
   const matchingPasswordResetDto: UserResetPasswordDto = {

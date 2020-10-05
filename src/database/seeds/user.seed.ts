@@ -47,8 +47,8 @@ export class UserSeeder {
         await newUser.sendWelcomeEmail();
 
         return Logger.log(`Initial user ${this.seedEmail} seeded successfully!`, 'UserSeeder');
-      } catch(error) {
-        throw new InternalServerErrorException(`Could not seed initial user.\n\n${error}`)
+      } catch (error) {
+        throw new InternalServerErrorException(`Could not seed initial user.\n\n${error}`);
       }
     }
   }

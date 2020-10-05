@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Logger, INestApplication, ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
 
 import { AllExceptionsFilter } from '@common/filters/all-exceptions.filter';
 import { EventLoggerInterceptor } from '@common/interceptors/event-logger.interceptor';
@@ -8,12 +8,12 @@ import { EventLoggerInterceptor } from '@common/interceptors/event-logger.interc
 import { CorsUtility } from '@utilities/security/cors.utility';
 import { EventLogger } from '@utilities/logging/event-logger.utility';
 import { SwaggerUtility } from '@utilities/swagger';
-
 import { DatabaseModule } from '@database/index';
 
 import appMetaData from '@metadata';
 import environment from '@environment';
 
+import * as helmet from 'helmet';
 import * as sentry from '@sentry/node';
 
 class BoilerplateServer {
@@ -47,8 +47,7 @@ class BoilerplateServer {
     await this.databaseModule.seedDatabase();
 
     this.app.enableCors(new CorsUtility().returnCorsConfig());
-
-    this.swaggerUtility.initializeSwagger(this.app);
+    this.app.use(helmet());
 
     this.app.useGlobalFilters(new AllExceptionsFilter());
     this.app.useGlobalInterceptors(new EventLoggerInterceptor());
@@ -56,6 +55,8 @@ class BoilerplateServer {
       transform: true,
       whitelist: true
     }));
+
+    this.swaggerUtility.initializeSwagger(this.app);
 
     await this.app.listen(environment.port);
 

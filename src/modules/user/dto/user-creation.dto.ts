@@ -25,10 +25,10 @@ export class UserCreationDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  role: Partial<Role>;
+  role: Role;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsOptional()
-  agency: Partial<Agency>;
+  agency: Agency;
 }
