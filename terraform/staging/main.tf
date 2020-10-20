@@ -16,7 +16,17 @@ variable "aws_region" {
   default = "us-west-2"
 }
 
+terraform {
+  backend "s3" {
+    bucket  = "shift3-terraform-state"
+    key     = "boilerplate-server-node/terraform.tfstate"
+    region  = "us-west-2"
+    profile = "shift3"
+  }
+}
+
 provider "aws" {
+  profile = "shift3"
   region  = var.aws_region
   version = "2.58"
 

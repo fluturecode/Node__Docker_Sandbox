@@ -1,14 +1,14 @@
 data "aws_elastic_beanstalk_hosted_zone" "main" {}
 
 resource "aws_elastic_beanstalk_application" "eb_app" {
-  name        = "${var.application_name}"
-  description = "${var.application_description}"
+  name        = var.application_name
+  description = var.application_description
 }
 
 resource "aws_elastic_beanstalk_environment" "main" {
   name                    = "${var.application_name}-${var.application_environment}"
-  application             = "${aws_elastic_beanstalk_application.eb_app.name}"
-  solution_stack_name     = "${var.solution_stack}"
+  application             = aws_elastic_beanstalk_application.eb_app.name
+  solution_stack_name     = var.solution_stack
   tier                    = "WebServer"
 
   setting {
@@ -32,15 +32,15 @@ resource "aws_elastic_beanstalk_environment" "main" {
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "InstanceType"
-    value     = "${var.instance_type}"
+    value     = var.instance_type
   }
 
   dynamic "setting" {
-    for_each = "${var.environment_variables}"
+    for_each = var.environment_variables
     content {
       namespace = "aws:elasticbeanstalk:application:environment"
-      name      = "${setting.key}"
-      value     = "${setting.value}"
+      name      = setting.key
+      value     = setting.value
     }
   }
 
@@ -89,7 +89,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   setting {
     namespace = "aws:elbv2:listener:443"
     name      = "SSLCertificateArns"
-    value     = "${var.acm_certificate_arn}"
+    value     = var.acm_certificate_arn
   }
 
   setting {
@@ -173,7 +173,7 @@ resource "aws_elastic_beanstalk_environment" "main" {
   setting {
     namespace = "aws:autoscaling:asg"
     name      = "MaxSize"
-    value     = "${var.max_size}"
+    value     = var.max_size
   }
 
   setting {
